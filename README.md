@@ -391,6 +391,17 @@ API_URL=http://localhost:8001
 reflex run  # Starts both frontend and backend
 ```
 
+### Enable data import/generation actions
+The Kaggle import, synthetic generation, and clear-data buttons are disabled unless you opt in.
+
+```bash
+ENABLE_DATA_OPERATIONS=true reflex run
+# or, if you run the backend manually
+ENABLE_DATA_OPERATIONS=true uvicorn backend.app:app --reload --port 8000
+```
+
+Any process that needs to call the data routes must be started with `ENABLE_DATA_OPERATIONS=true` in its environment.
+
 ### Replit Deployment
 ```bash
 git push replit main

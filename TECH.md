@@ -564,6 +564,40 @@ Returns specific claim details
 }
 ```
 
+### PUT /api/claims/{claim_id}/status
+Update claim status (approve, deny, flag, etc.) and retrieve hydrated data for the UI.
+```json
+{
+  "success": true,
+  "claim": {
+    "id": "C12345",
+    "status": "denied",
+    "denial_reason": "Documentation missing",
+    "processed_date": "2025-01-02T15:45:00Z",
+    "risk_score": 0.82,
+    "days_to_process": 12.0,
+    "processor_notes": "Escalated for additional paperwork"
+  },
+  "quick_stats": {
+    "provider_summary": "Returning provider (12 prior claims, 83% approval).",
+    "similar_summary": "2 share diagnosis, 1 share procedure",
+    "days_pending_label": "Processed in 12 days"
+  }
+}
+```
+
+### PUT /api/claims/{claim_id}/notes
+Persist processor notes for a claim.
+```json
+{
+  "success": true,
+  "claim": {
+    "id": "C12345",
+    "processor_notes": "Reviewed by supervisor on Jan 5"
+  }
+}
+```
+
 ### POST /api/data/load-kaggle
 Downloads and loads real insurance data from Kaggle
 ```json
@@ -580,6 +614,8 @@ Downloads and loads real insurance data from Kaggle
 - Downloads from `ravalsmit/insurance-claims-and-policy-data`
 - Uses kagglehub for caching (fast on subsequent loads)
 - 5-minute timeout for first download
+- On success the in-memory caches refresh immediately
+- UI buttons are only enabled when `ENABLE_DATA_OPERATIONS=true`
 
 ### POST /api/data/generate-sample?num_claims=1000
 Generates realistic synthetic insurance claims data
@@ -601,6 +637,7 @@ Generates realistic synthetic insurance claims data
 - Realistic CPT procedure codes
 - Patient demographics (age, gender, state)
 - Processing metrics (days to process, denial reasons)
+- In-memory caches refresh so new claims are visible without restarting
 
 ### POST /api/data/clear-data
 Clears all claims and providers from the database
