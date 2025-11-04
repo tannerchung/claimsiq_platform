@@ -13,7 +13,7 @@ def claims_table() -> rx.Component:
     return rx.box(
         rx.vstack(
             rx.hstack(
-                rx.heading("Claims", size="md"),
+                rx.heading("Claims", size="5"),
                 rx.spacer(),
                 rx.select(
                     ["all", "pending", "approved", "denied", "flagged"],
@@ -23,12 +23,12 @@ def claims_table() -> rx.Component:
                         ClaimsState.load_claims()
                     ],
                 ),
-                spacing=SPACING["md"],
+                spacing="4",
                 width="100%",
             ),
             rx.cond(
                 ClaimsState.is_loading,
-                rx.spinner(size="lg"),
+                rx.spinner(size="3"),
                 rx.cond(
                     ClaimsState.claims_data.length() > 0,
                     rx.table.root(
@@ -53,17 +53,8 @@ def claims_table() -> rx.Component:
                                     ),
                                     rx.table.cell(
                                         rx.text(
-                                            f"{claim.get('risk_score', 0):.2f}",
-                                            color=rx.cond(
-                                                claim.get("risk_score", 0) >= 0.7,
-                                                COLORS["danger"],
-                                                rx.cond(
-                                                    claim.get("risk_score", 0) >= 0.4,
-                                                    COLORS["warning"],
-                                                    COLORS["success"]
-                                                )
-                                            ),
-                                            font_weight="bold"
+                                            claim["risk_score"],
+                                            weight="bold"
                                         )
                                     ),
                                 )
@@ -74,10 +65,10 @@ def claims_table() -> rx.Component:
                     rx.text("No claims data available", color=COLORS["gray"]),
                 )
             ),
-            spacing=SPACING["md"],
+            spacing="4",
             width="100%",
         ),
-        padding=SPACING["lg"],
+        padding="4",
         background=COLORS["white"],
         border_radius="0.5rem",
         box_shadow="0 1px 3px 0 rgba(0, 0, 0, 0.1)",

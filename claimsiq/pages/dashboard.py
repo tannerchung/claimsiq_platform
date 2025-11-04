@@ -21,7 +21,7 @@ def dashboard() -> rx.Component:
                         ),
                         rx.fragment(),
                     ),
-                    rx.heading("Dashboard", size="xl"),
+                    rx.heading("Dashboard", size="8"),
                     rx.grid(
                         metric_card(
                             "Total Claims",
@@ -44,14 +44,14 @@ def dashboard() -> rx.Component:
                             COLORS["danger"]
                         ),
                         columns="4",
-                        spacing=SPACING["md"],
+                        spacing="4",
                         width="100%",
                     ),
                     claims_table(),
-                    spacing=SPACING["lg"],
+                    spacing="6",
                     width="100%",
                 ),
-                padding=SPACING["xl"],
+                padding="6",
                 max_width="1400px",
                 margin="0 auto",
             ),

@@ -1,3 +1,7 @@
+.states
+*.py[cod]
+.web
+assets/external/
 REPLIT_3HR_BUILD.md
 PRESENTATION_STRATEGY.md
 CLAUDE_CODE_3HR_MISSION.md
