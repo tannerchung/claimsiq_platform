@@ -7,10 +7,25 @@ class AnalyticsService:
     @staticmethod
     def calculate_risk_score(claim: dict) -> float:
         score = 0.0
-        
-        if claim.get('claim_amount', 0) > 5000:
+        amount = claim.get('claim_amount', 0)
+
+        # High amount claims (scaled risk)
+        if amount > 10000:
+            score += 0.4
+        elif amount > 5000:
             score += 0.3
-        
+        elif amount > 2000:
+            score += 0.1
+
+        # Check if claim is pending
+        if claim.get('status') == 'pending':
+            score += 0.2
+
+        # Check if flagged
+        if claim.get('status') == 'flagged':
+            score += 0.3
+
+        # Days pending (if claim date exists)
         if claim.get('claim_date'):
             try:
                 if isinstance(claim['claim_date'], str):
@@ -20,15 +35,18 @@ class AnalyticsService:
                 days_pending = (datetime.now() - claim_date).days
                 if days_pending > 30:
                     score += 0.3
+                elif days_pending > 14:
+                    score += 0.15
             except:
                 pass
-        
+
+        # Unknown provider check
         providers_df = DataService.get_providers()
         if not providers_df.empty and claim.get('provider_id'):
             if claim['provider_id'] not in providers_df['id'].values:
                 score += 0.2
-        
-        return min(score, 1.0)
+
+        return round(min(score, 1.0), 2)
     
     @staticmethod
     def get_risk_distribution():

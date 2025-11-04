@@ -1,3 +1,3 @@
 import os
 
-API_URL = os.getenv("API_URL", "http://localhost:8001")
+API_URL = os.getenv("API_URL", "http://localhost:8000")

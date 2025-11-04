@@ -64,8 +64,13 @@ class ClaimsService:
         claims_list = []
         for _, row in page_data.iterrows():
             claim_dict = row.to_dict()
+            # Convert datetime to string
             if 'claim_date' in claim_dict and not isinstance(claim_dict['claim_date'], str):
                 claim_dict['claim_date'] = str(claim_dict['claim_date'])
+            # Replace NaN/None values with appropriate defaults
+            for key, value in claim_dict.items():
+                if pd.isna(value):
+                    claim_dict[key] = None
             claims_list.append(claim_dict)
         
         return {
@@ -107,5 +112,12 @@ class ClaimsService:
             (provider_metrics['approval_rate'] > overall_approval + 0.15) |
             (provider_metrics['avg_claim_amount'] > claims_df['claim_amount'].quantile(0.9))
         )
-        
-        return provider_metrics.to_dict('records')
+
+        # Convert to records and replace NaN values
+        records = provider_metrics.to_dict('records')
+        for record in records:
+            for key, value in record.items():
+                if pd.isna(value):
+                    record[key] = None
+
+        return records

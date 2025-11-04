@@ -81,3 +81,53 @@ TRANSITIONS = {
     "normal": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     "slow": "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
 }
+
+# Dark Theme Colors (Accessible and Easy on Eyes)
+DARK_COLORS = {
+    # Backgrounds (not pure black)
+    "bg_primary": "#0f1419",      # Near-black, slightly blue tint
+    "bg_secondary": "#1a1f2e",    # Slate gray
+    "bg_tertiary": "#242b3d",     # Lighter slate
+    "bg_card": "#1e2433",         # Card background
+    "bg_elevated": "#252d3f",     # Elevated surfaces
+
+    # Text (off-white for readability)
+    "text_primary": "#f3f4f6",    # Off-white
+    "text_secondary": "#d1d5db",  # Light gray
+    "text_tertiary": "#9ca3af",   # Medium gray
+    "text_disabled": "#6b7280",   # Disabled text
+
+    # Borders and dividers
+    "border": "#2d3748",          # Subtle borders
+    "border_light": "#374151",    # Lighter borders
+    "divider": "rgba(255, 255, 255, 0.1)",  # Subtle dividers
+
+    # Accent colors (slightly muted for dark theme)
+    "primary": "#60a5fa",         # Brighter blue for visibility
+    "success": "#34d399",         # Bright green
+    "warning": "#fbbf24",         # Bright yellow
+    "danger": "#f87171",          # Bright red
+
+    # Status with opacity
+    "success_bg": "rgba(16, 185, 129, 0.1)",
+    "warning_bg": "rgba(245, 158, 11, 0.1)",
+    "danger_bg": "rgba(239, 68, 68, 0.1)",
+    "primary_bg": "rgba(37, 99, 235, 0.1)",
+}
+
+# Dark theme gradients
+DARK_GRADIENTS = {
+    "background": "linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%)",
+    "card": "linear-gradient(145deg, #1e2433 0%, #242b3d 100%)",
+    "primary": "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+    "success": "linear-gradient(135deg, #34d399 0%, #10b981 100%)",
+}
+
+# Dark theme shadows (more pronounced for depth)
+DARK_SHADOWS = {
+    "sm": "0 1px 3px rgba(0, 0, 0, 0.4)",
+    "md": "0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)",
+    "lg": "0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4)",
+    "xl": "0 20px 25px rgba(0, 0, 0, 0.6), 0 10px 10px rgba(0, 0, 0, 0.5)",
+    "glow": "0 0 20px rgba(96, 165, 250, 0.3)",  # Subtle glow for interactive elements
+}

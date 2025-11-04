@@ -355,6 +355,11 @@ class ClaimsState(rx.State):
     def toggle_dark_mode(self):
         self.dark_mode = not self.dark_mode
 
+    # Error message setter
+    def set_error_message(self, message: str):
+        """Set or clear error message"""
+        self.error_message = message
+
     # Notifications
     def show_toast(self, message: str, type: str = "info"):
         self.notification_message = message
@@ -467,7 +472,7 @@ class ClaimsState(rx.State):
 
         try:
             async with httpx.AsyncClient(timeout=300.0) as client:  # 5 min timeout
-                response = await client.post(f"{API_URL}/data/load-kaggle")
+                response = await client.post(f"{API_URL}/api/data/load-kaggle")
 
                 if response.status_code == 200:
                     result = response.json()
@@ -496,7 +501,7 @@ class ClaimsState(rx.State):
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(
-                    f"{API_URL}/data/generate-sample",
+                    f"{API_URL}/api/data/generate-sample",
                     params={"num_claims": num_claims}
                 )
 
@@ -524,7 +529,7 @@ class ClaimsState(rx.State):
 
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(f"{API_URL}/data/clear-data")
+                response = await client.post(f"{API_URL}/api/data/clear-data")
 
                 if response.status_code == 200:
                     result = response.json()
@@ -541,3 +546,58 @@ class ClaimsState(rx.State):
             self.show_toast(f"Error clearing data: {str(e)}", "error")
         finally:
             self.is_loading_data = False
+
+    # Claim Actions (Approve/Deny/Flag)
+    async def approve_claim(self, claim_id: str):
+        """Approve a claim"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.put(
+                    f"{API_URL}/api/claims/{claim_id}/status",
+                    json={"status": "approved"}
+                )
+
+                if response.status_code == 200:
+                    self.show_toast(f"✓ Claim {claim_id} approved successfully", "success")
+                    self.close_claim_modal()
+                    await self.load_all_data()
+                else:
+                    self.show_toast(f"Failed to approve claim: {response.status_code}", "error")
+        except Exception as e:
+            self.show_toast(f"Error approving claim: {str(e)}", "error")
+
+    async def deny_claim(self, claim_id: str, reason: str = ""):
+        """Deny a claim"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.put(
+                    f"{API_URL}/api/claims/{claim_id}/status",
+                    json={"status": "denied", "reason": reason}
+                )
+
+                if response.status_code == 200:
+                    self.show_toast(f"✗ Claim {claim_id} denied", "success")
+                    self.close_claim_modal()
+                    await self.load_all_data()
+                else:
+                    self.show_toast(f"Failed to deny claim: {response.status_code}", "error")
+        except Exception as e:
+            self.show_toast(f"Error denying claim: {str(e)}", "error")
+
+    async def flag_claim(self, claim_id: str, note: str = ""):
+        """Flag a claim for review"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.put(
+                    f"{API_URL}/api/claims/{claim_id}/status",
+                    json={"status": "flagged", "note": note}
+                )
+
+                if response.status_code == 200:
+                    self.show_toast(f"⚠ Claim {claim_id} flagged for review", "warning")
+                    self.close_claim_modal()
+                    await self.load_all_data()
+                else:
+                    self.show_toast(f"Failed to flag claim: {response.status_code}", "error")
+        except Exception as e:
+            self.show_toast(f"Error flagging claim: {str(e)}", "error")
