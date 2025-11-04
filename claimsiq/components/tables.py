@@ -2,6 +2,7 @@ import reflex as rx
 from claimsiq.theme import COLORS, FONT_SIZES, SPACING, SHADOWS
 from claimsiq.state import ClaimsState
 from claimsiq.components.ui_helpers import empty_state, sortable_header
+from claimsiq.components.filters import filters_button
 
 def get_risk_color(risk_score: float) -> str:
     if risk_score >= 0.7:
@@ -87,6 +88,19 @@ def claims_table() -> rx.Component:
                         ],
                         size="2",
                     ),
+                    # Advanced filters
+                    filters_button(),
+                    # Export button
+                    rx.button(
+                        rx.hstack(
+                            rx.icon("download", size=18),
+                            rx.text("Export"),
+                            spacing="2",
+                        ),
+                        on_click=ClaimsState.export_to_csv,
+                        variant="outline",
+                        size="2",
+                    ),
                     spacing="3",
                 ),
                 spacing="4",
@@ -165,6 +179,11 @@ def claims_table() -> rx.Component:
                                         rx.table.cell(
                                             risk_badge(claim["risk_score"])
                                         ),
+                                        on_click=lambda claim_id=claim["id"]: ClaimsState.open_claim_modal(str(claim_id)),
+                                        cursor="pointer",
+                                        _hover={
+                                            "background": COLORS["gray_50"],
+                                        },
                                     )
                                 )
                             ),

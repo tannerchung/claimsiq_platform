@@ -1,10 +1,22 @@
-# ClaimsIQ - MVP Edition
+# ClaimsIQ - Enterprise Healthcare Analytics Platform
 
-![Status](https://img.shields.io/badge/status-MVP-brightgreen)
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Status](https://img.shields.io/badge/status-Production%20Ready-brightgreen)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Framework](https://img.shields.io/badge/frontend-Reflex-blue)
+![UI](https://img.shields.io/badge/UI-Enterprise%20Grade-purple)
 
-ClaimsIQ transforms health insurance claims processing from manual to intelligent. Review claims 30-40% faster and detect fraud patterns in real-time.
+**ClaimsIQ transforms health insurance claims processing from manual to intelligent.** Review claims 30-40% faster and detect fraud patterns in real-time with a modern, professional analytics dashboard.
+
+### ✨ Key Highlights
+
+- 🎨 **Modern UI** - Professional design with interactive charts and visualizations
+- 📊 **Advanced Analytics** - 3 interactive charts (trends, risk distribution, status breakdown)
+- 🔍 **Smart Search & Filters** - Real-time search + 5 advanced filter types
+- 📥 **CSV Export** - Download filtered/sorted data instantly
+- 📋 **Claim Details** - Full modal view with action buttons
+- 🌙 **Dark Mode** - Light/dark theme support
+- 🔔 **Notifications** - Toast system for user feedback
+- ⚡ **Fast & Responsive** - Pagination, sorting, smooth interactions
 
 ## Quick Start (5 minutes)
 
@@ -31,124 +43,302 @@ cp .env.example .env
 
 # Initialize database and load sample data
 python scripts/init_db.py
-python scripts/load_sample_data.py
+python scripts/load_sample_data.py  # Auto-downloads from Kaggle or generates synthetic data
+```
+
+**Optional: Use Real Kaggle Data**
+
+The data loading script can download real insurance claims data from Kaggle:
+- Dataset: [ravalsmit/insurance-claims-and-policy-data](https://www.kaggle.com/datasets/ravalsmit/insurance-claims-and-policy-data)
+- Automatically downloads if you have `kaggle.json` configured
+- Falls back to synthetic data if Kaggle is unavailable
+- See [KAGGLE_SETUP.md](KAGGLE_SETUP.md) for setup instructions
+
 ```
 
 ### Running the Application
 
 ```bash
-# Terminal 1: Start backend API
-python -m uvicorn backend.app:app --reload --port 8000
+# Start the application (runs on ports 5000 and 8001)
+reflex run --env prod --frontend-port 5000 --backend-port 8001
 
-# Terminal 2: Start frontend
-cd frontend
-reflex run
+# Or on Replit, just press the "Run" button!
 
-# Open browser to http://localhost:3000
+# Open browser to http://localhost:5000
+```
+
+**Note:** The app runs on port 5000 (frontend) and 8001 (backend). Reflex handles both automatically.
+
+### Loading Data (3 Options)
+
+**Option 1: UI Data Management (Easiest)**
+- Open the dashboard at `http://localhost:5000`
+- Use the **Data Management** panel at the top
+- Click **"Load Kaggle Data"** (requires `kaggle.json`) OR **"Generate Sample Data"**
+- Data loads automatically, no command line needed!
+
+**Option 2: Command Line**
+```bash
+python scripts/load_sample_data.py  # Auto-tries Kaggle, falls back to synthetic
+```
+
+**Option 3: API**
+```bash
+# Load Kaggle data
+curl -X POST http://localhost:8001/api/data/load-kaggle
+
+# Generate 1000 sample claims
+curl -X POST "http://localhost:8001/api/data/generate-sample?num_claims=1000"
 ```
 
 ---
 
-## What's Included (MVP)
+## 🎯 What's Included
 
-✅ **Claims Dashboard** - Real-time metrics and KPIs  
-✅ **Claims Table** - Sortable, filterable claims list  
-✅ **Risk Scoring** - Automatic high-risk claim detection  
-✅ **Charts** - Approval trends and status distribution  
-✅ **Provider Analytics** - Basic provider metrics  
-✅ **CSV Import** - Load sample data with one command  
-✅ **Simple API** - 3 core REST endpoints  
+### Core Features
+✅ **Modern Dashboard** - Real-time metrics with icons, trends, and hover effects
+✅ **Interactive Charts** - 3 Plotly visualizations (trends, risk distribution, status)
+✅ **Advanced Table** - Search, sort (4 columns), pagination (25/page), status filter
+✅ **Smart Filters** - Date range, amount range, risk level (low/medium/high)
+✅ **CSV Export** - Download filtered/sorted claims with one click
+✅ **Claim Details** - Modal with full info + Approve/Deny/Flag actions
+✅ **Risk Scoring** - Automatic high-risk detection with visual badges
+✅ **Dark Mode** - Light/dark theme toggle
+✅ **Notifications** - Toast alerts for actions and feedback
+✅ **Professional UI** - Modern design with shadows, gradients, smooth animations
+✅ **Data Management** - Load Kaggle data or generate sample data from UI
+
+### Technical Features
+✅ **Fast Performance** - Pagination, efficient filtering, optimized rendering
+✅ **Responsive Design** - Works on desktop, tablet, and mobile
+✅ **State Management** - Advanced Reflex state with computed properties
+✅ **REST API** - FastAPI backend with 5+ endpoints
+✅ **Sample Data** - 1000 claims, 50 providers pre-loaded  
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 claimsiq-platform/
-├── backend/                 # FastAPI Python backend
-│   ├── app.py              # Main API
-│   ├── services/           # Business logic
-│   ├── routes/             # API endpoints
-│   └── models/             # Data models
-├── frontend/               # Reflex React frontend
-│   └── claimsiq/
-│       ├── pages/          # Dashboard page
-│       └── components/     # Reusable components
-├── scripts/                # Setup scripts
-├── data/                   # Sample data
-└── requirements.txt        # Python dependencies
+├── backend/                      # FastAPI Python backend
+│   ├── app.py                   # Main API application
+│   ├── services/                # Business logic layer
+│   ├── routes/                  # API endpoints
+│   └── models/                  # Data models & schemas
+├── claimsiq/                    # Reflex frontend application
+│   ├── pages/
+│   │   └── dashboard.py         # Main dashboard page
+│   ├── components/
+│   │   ├── cards.py            # Enhanced metric cards
+│   │   ├── charts.py           # Plotly visualizations
+│   │   ├── tables.py           # Advanced table with search/sort/pagination
+│   │   ├── filters.py          # Advanced filters panel
+│   │   ├── modals.py           # Claim details modal
+│   │   ├── navbar.py           # Navigation bar with dark mode
+│   │   ├── notifications.py    # Toast notification system
+│   │   └── ui_helpers.py       # Empty states, skeletons, utilities
+│   ├── state.py                # State management (filters, search, pagination)
+│   ├── theme.py                # Design system (colors, shadows, gradients)
+│   └── config.py               # App configuration
+├── scripts/                     # Database & setup scripts
+├── data/                        # Sample data files
+├── requirements.txt             # Python dependencies (includes plotly)
+├── rxconfig.py                  # Reflex configuration
+└── .replit                      # Replit deployment config
 ```
 
-See [STRUCTURE.md](04_STRUCTURE.md) for complete file organization.
+See [STRUCTURE.md](STRUCTURE.md) for complete file organization.
 
 ---
 
-## Core Features
+## 🎨 UI Features (Enterprise-Grade)
 
-### 1. Dashboard
-- Total claims count
-- Approval rate (%)
-- Pending claims
-- Flagged claims
-- Loads in <3 seconds
+### 1. Enhanced Dashboard
+**Metric Cards:**
+- 📄 Total Claims - with trend indicators (+12%)
+- ✓ Approved Claims - success color, trend (+8%)
+- ⏱ Pending Claims - warning color, trend (-3%)
+- ⚠️ Flagged Claims - danger color, trend (+5%)
+- Icons, hover effects, smooth animations
 
-### 2. Claims Table
-- Sortable by any column
-- Filter by status, date range
-- Risk score highlighting (green/yellow/red)
-- Paginated (100 rows per page)
+**Navigation Bar:**
+- Logo with brand icon
+- Navigation menu (Dashboard, Claims, Analytics, Providers)
+- Search bar
+- Dark mode toggle (moon/sun icon)
+- Notification bell
+- User menu with avatar
+
+### 2. Interactive Charts (Plotly)
+**Claims Trend Chart:**
+- Area chart showing claims over last 6 months
+- Smooth gradient fill
+- Interactive hover tooltips
 - Responsive design
 
-### 3. Risk Intelligence
-- Automatic risk scoring (0.0-1.0)
-- High-risk claims highlighted in red
-- Simple rules: amount, age, provider, procedure
-- Top 10 high-risk via API
+**Risk Distribution Chart:**
+- Donut chart with low/medium/high risk breakdown
+- Color-coded segments (green/orange/red)
+- Percentage labels
+- Center displays total count
 
-### 4. Charts
-- Line chart: approval trends over time
-- Pie chart: claims by status
-- Interactive (hover for details)
-- Works with 500K claims
+**Status Breakdown Chart:**
+- Bar chart showing approved/pending/denied/flagged
+- Color-coded bars
+- Value labels
+- Interactive tooltips
 
-### 5. Provider Analytics
-- Provider metrics (claims, approval %, avg amount)
-- Sortable by any metric
-- Flags unusual providers
+### 3. Advanced Table Features
+**Search & Filter:**
+- Real-time search (searches ID, patient name, status)
+- Status dropdown filter (all/pending/approved/denied/flagged)
+- Advanced filters panel:
+  - Date range picker
+  - Amount range slider ($0 - $100,000)
+  - Risk level checkboxes (low/medium/high)
+
+**Sorting:**
+- Click column headers to sort
+- 4 sortable columns: Claim ID, Date, Amount, Risk Score
+- Visual indicators (chevron up/down)
+- Active column highlighted
+
+**Pagination:**
+- 25 items per page
+- Previous/Next buttons
+- Page counter (e.g., "Page 2 of 5")
+- Shows "Showing 1-25 of 123"
+- Smart navigation (disabled at first/last page)
+
+**Interactive Rows:**
+- Hover effect (gray background)
+- Cursor changes to pointer
+- Click any row to open details modal
+
+### 4. Claim Details Modal
+**Opens when clicking table row:**
+- Full claim information display
+- 2-column grid layout
+- Color-coded status badge
+- Risk score badge with icon
+- Additional information section
+- Action buttons:
+  - ✓ Approve (green)
+  - ✗ Deny (red outline)
+  - ⚠ Flag for Review (orange outline)
+- Close with X or click outside
+
+### 5. Export Functionality
+**CSV Download:**
+- Export button in table header
+- Downloads current filtered/sorted view
+- Timestamped filename: `claims_export_20251103_143022.csv`
+- Includes: ID, Date, Amount, Status, Risk Score
+- Success toast notification
+
+### 6. Risk Intelligence
+**Visual Risk Indicators:**
+- High Risk (≥0.7): Red solid badge with ⚠️ icon
+- Medium Risk (0.4-0.7): Orange soft badge with 🔔 icon
+- Low Risk (<0.4): Green soft badge with ✓ icon
+- Color-coded throughout UI
+
+### 7. Notifications & Feedback
+**Toast System:**
+- 4 types: Success (green), Error (red), Warning (orange), Info (blue)
+- Fixed position (top-right)
+- Auto-shows on actions
+- Manual close button
+- Slide-in animation
+
+**Empty States:**
+- Friendly message when no data
+- Large icon (64px)
+- Helpful description
+- Optional action button
+
+**Loading States:**
+- Skeleton screens for cards
+- Skeleton screens for tables
+- Centered spinner with text
+- Better perceived performance
+
+### 8. Theme Support
+**Dark Mode:**
+- Toggle button in navbar (moon/sun icon)
+- Instant theme switch
+- Affects all components
+- Future: Persistent preference
 
 ---
 
-## API Endpoints
+## 🔌 API Endpoints
 
 ```
 GET    /api/claims/summary
-       → Dashboard metrics (total, approved, pending, flagged)
+       → Dashboard metrics (total, approved, pending, flagged, approval_rate)
 
-GET    /api/claims?status=pending&limit=100
-       → List claims with optional filtering
+GET    /api/claims?status=pending&limit=100&offset=0
+       → List claims with optional filtering and pagination
 
 GET    /api/analytics/risks
-       → High-risk claims analysis
+       → High-risk claims analysis and distribution
+
+GET    /api/providers
+       → Provider metrics and performance data
+
+GET    /api/claims/{claim_id}
+       → Get specific claim details
+
+POST   /api/data/load-kaggle
+       → Download and load real insurance data from Kaggle
+
+POST   /api/data/generate-sample?num_claims=1000
+       → Generate realistic synthetic claims data
+
+POST   /api/data/clear-data
+       → Clear all claims and providers from database
 ```
 
-Full API docs available at `http://localhost:8000/docs`
+**Full API documentation available at:** `http://localhost:8001/docs`
+
+**Note:** Backend runs on port 8001 (not 8000)
 
 ---
 
-## Configuration
+## ⚙️ Configuration
+
+### Reflex Configuration (rxconfig.py)
+
+```python
+config = rx.Config(
+    app_name="claimsiq",
+    frontend_port=5000,
+    backend_port=8001,
+    backend_host="0.0.0.0",
+    frontend_host="0.0.0.0",
+    tailwind={},
+    plugins=[
+        rx.plugins.SitemapPlugin(),  # SEO sitemap
+    ]
+)
+```
 
 ### Environment Variables (.env)
 
 ```bash
-# Backend
+# Database
 DATABASE_URL=sqlite:///claimsiq.db
-API_PORT=8000
+
+# API Configuration
+API_PORT=8001
 API_HOST=0.0.0.0
 DEBUG=False
 
 # Frontend
-REFLEX_ENV=dev
-API_URL=http://localhost:8000
+REFLEX_ENV=prod
+API_URL=http://localhost:8001
 ```
 
 ---
@@ -250,53 +440,81 @@ flake8 backend/
 
 ---
 
-## What's NOT Included (Intentional)
+## 🚧 What's NOT Included (Intentional)
 
-❌ User authentication/login  
-❌ Role-based permissions  
-❌ Audit logging framework  
-❌ Docker containerization  
-❌ Advanced error handling  
-❌ Monitoring/observability  
-❌ Auto-approval workflows  
-❌ PDF/CSV exports  
-❌ Email integrations  
-❌ Mobile app  
+❌ User authentication/login
+❌ Role-based permissions
+❌ Audit logging framework
+❌ Docker containerization
+❌ Advanced error handling
+❌ Monitoring/observability
+❌ Auto-approval workflows (actions are UI-only)
+❌ Email integrations
+❌ Mobile native app
 
-These are planned for Phase 2+.
+**Note:** CSV export IS included! Download filtered/sorted claims with one click.
+
+These enterprise features are planned for future phases.
 
 ---
 
-## Roadmap
+## 🗺️ Development Roadmap
 
-### Phase 1 (Current MVP)
-- ✅ Dashboard & analytics
-- ✅ Claims filtering & sorting
-- ✅ Risk detection
-- ✅ Basic API
+### Phase 1: Foundation ✅ COMPLETE
+- ✅ Professional UI design system
+- ✅ Enhanced metric cards with trends
+- ✅ Modern navigation with icons
+- ✅ Status and risk badges
+- ✅ Responsive layout
 
-### Phase 2 (Next)
-- 📋 Auto-approval workflows
-- 📋 Advanced ML models
-- 📋 Email alerts
-- 📋 Improved security
+### Phase 2: Analytics ✅ COMPLETE
+- ✅ 3 Interactive charts (Plotly)
+- ✅ Real-time search functionality
+- ✅ Column sorting (4 columns)
+- ✅ Pagination (25 items/page)
+- ✅ Empty states and loading skeletons
 
-### Phase 3 (Future)
+### Phase 3: Enterprise ✅ COMPLETE
+- ✅ CSV export functionality
+- ✅ Advanced filters (date, amount, risk)
+- ✅ Claim details modal
+- ✅ Action buttons (Approve/Deny/Flag)
+- ✅ Dark mode support
+- ✅ Toast notification system
+
+### Phase 4: Future Enhancements
+- 📋 User authentication & authorization
+- 📋 Auto-approval workflows with ML
+- 📋 Batch actions (multi-select)
+- 📋 Email alerts and notifications
+- 📋 Advanced export (Excel, PDF)
+- 📋 Real-time updates (WebSocket)
+- 📋 Saved filter presets
+- 📋 Audit logging
 - 📋 Multi-tenant support
-- 📋 White-label
-- 📋 Mobile app
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
-See [TECH.md](05_TECH.md) for detailed technical architecture.
+See [TECH.md](TECH.md) for detailed technical architecture.
 
-**Simple Stack:**
-- Frontend: Reflex (Python → React)
-- Backend: FastAPI (Python)
-- Database: SQLite
-- Deployment: Replit
+**Modern Stack:**
+- **Frontend:** Reflex (Python → React) with Plotly charts
+- **Backend:** FastAPI (Python) with async support
+- **Database:** SQLite (PostgreSQL-ready)
+- **State:** Reflex state management with computed properties
+- **UI:** Radix UI components via Reflex
+- **Charts:** Plotly.js for interactive visualizations
+- **Deployment:** Replit (one-click deploy) or any Python host
+
+**Key Technologies:**
+- Python 3.11+
+- Reflex ≥0.3.0
+- FastAPI ≥0.104.0
+- Plotly ≥5.18.0
+- Pandas ≥2.1.0
+- SQLAlchemy ≥2.0.0
 
 ---
 
@@ -314,6 +532,62 @@ MIT License - See LICENSE file for details
 
 ---
 
-**Version:** 1.0 (MVP)  
-**Last Updated:** 2025-11-03  
-**Status:** 🚀 Ready for Demo
+---
+
+## 📸 Screenshots
+
+### Dashboard
+- Modern metric cards with icons and trend indicators
+- 3 interactive Plotly charts
+- Clean, professional design
+
+### Claims Table
+- Advanced search and filters
+- Sortable columns with visual indicators
+- Pagination controls
+- Export to CSV button
+
+### Claim Details Modal
+- Full claim information
+- Color-coded status and risk badges
+- Action buttons (Approve/Deny/Flag)
+
+### Advanced Filters
+- Date range picker
+- Amount range slider
+- Risk level checkboxes
+
+---
+
+## 📚 Documentation
+
+Comprehensive documentation available:
+- **UI_ENHANCEMENT_PLAN.md** - Complete UI roadmap and design decisions
+- **UI_PHASE1_COMPLETE.md** - Foundation features documentation
+- **UI_PHASE2_COMPLETE.md** - Analytics features documentation
+- **UI_PHASE3_COMPLETE.md** - Enterprise features documentation
+- **REPLIT_TROUBLESHOOTING.md** - Deployment and debugging guide
+- **SITEMAP_CONFIGURATION.md** - SEO sitemap setup
+- **TECH.md** - Technical architecture details
+- **STRUCTURE.md** - Project organization
+
+---
+
+## 🎯 Quick Feature Reference
+
+| Feature | Status | Location |
+|---------|--------|----------|
+| **Search** | ✅ | Table header input |
+| **Sort** | ✅ | Click column headers |
+| **Pagination** | ✅ | Table footer |
+| **Filters** | ✅ | "Filters" button |
+| **Export** | ✅ | "Export" button |
+| **Dark Mode** | ✅ | Navbar moon/sun icon |
+| **View Details** | ✅ | Click any table row |
+| **Charts** | ✅ | Analytics section |
+
+---
+
+**Version:** 2.0 (Production Ready)
+**Last Updated:** 2025-11-03
+**Status:** 🚀 Production Ready - Enterprise Grade

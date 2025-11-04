@@ -53,6 +53,18 @@ def navbar() -> rx.Component:
                     width="250px",
                     display=["none", "none", "block"],  # Hide on mobile
                 ),
+                # Dark mode toggle
+                rx.icon_button(
+                    rx.cond(
+                        rx.State.dark_mode,
+                        rx.icon("sun", size=20),
+                        rx.icon("moon", size=20),
+                    ),
+                    on_click=rx.State.toggle_dark_mode,
+                    variant="ghost",
+                    size="3",
+                    color=COLORS["gray_600"],
+                ),
                 # Notifications
                 rx.icon_button(
                     rx.icon("bell", size=20),

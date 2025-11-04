@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routes import claims, analytics
+from backend.routes import claims, analytics, data
 from backend.services.data_service import DataService
 
 app = FastAPI(title="ClaimsIQ API", version="1.0")
@@ -15,6 +15,7 @@ app.add_middleware(
 
 app.include_router(claims.router, prefix="/api", tags=["claims"])
 app.include_router(analytics.router, prefix="/api", tags=["analytics"])
+app.include_router(data.router, prefix="/api/data", tags=["data"])
 
 @app.on_event("startup")
 async def startup_event():

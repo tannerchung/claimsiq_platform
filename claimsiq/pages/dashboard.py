@@ -4,10 +4,19 @@ from claimsiq.components.cards import metric_card
 from claimsiq.components.navbar import navbar
 from claimsiq.components.tables import claims_table
 from claimsiq.components.charts import claims_trend_chart, risk_distribution_chart, status_breakdown_chart
+from claimsiq.components.modals import claim_detail_modal
+from claimsiq.components.notifications import notification_toast
+from claimsiq.components.data_management import data_management_panel
 from claimsiq.theme import COLORS, SPACING
 
 def dashboard() -> rx.Component:
     return rx.box(
+        # Notification toast (fixed position overlay)
+        notification_toast(),
+
+        # Claim details modal
+        claim_detail_modal(),
+
         rx.vstack(
             navbar(),
             rx.box(
@@ -23,6 +32,10 @@ def dashboard() -> rx.Component:
                         rx.fragment(),
                     ),
                     rx.heading("Dashboard", size="8", color=COLORS["gray_900"]),
+
+                    # Data Management Panel
+                    data_management_panel(),
+
                     rx.grid(
                         metric_card(
                             label="Total Claims",
