@@ -1,5 +1,6 @@
 import reflex as rx
 from claimsiq.theme import COLORS, FONT_SIZES, SPACING, SHADOWS
+from claimsiq.state import ClaimsState
 
 def nav_link(label: str, href: str, icon: str, is_active: bool = False) -> rx.Component:
     """Navigation link with icon and hover effect"""
@@ -27,17 +28,18 @@ def navbar() -> rx.Component:
             # Logo section
             rx.hstack(
                 rx.icon("activity", size=28, color=COLORS["primary"]),
-                rx.heading("ClaimsIQ", size="6", color=COLORS["primary"]),
+                rx.heading("ClaimsIQ", size="6", class_name="text-primary"),
                 spacing="2",
                 align="center",
+                class_name="flex items-center gap-2",
             ),
 
-            # Navigation links
+            # Navigation links (Claims, Analytics, Providers pages coming soon)
             rx.hstack(
                 nav_link("Dashboard", "/", "home", is_active=True),
-                nav_link("Claims", "/claims", "file-text"),
-                nav_link("Analytics", "/analytics", "bar-chart-2"),
-                nav_link("Providers", "/providers", "users"),
+                # nav_link("Claims", "/claims", "file-text"),
+                # nav_link("Analytics", "/analytics", "bar-chart-2"),
+                # nav_link("Providers", "/providers", "users"),
                 spacing="1",
                 display=["none", "none", "flex"],  # Hide on mobile
             ),
@@ -56,11 +58,11 @@ def navbar() -> rx.Component:
                 # Dark mode toggle
                 rx.icon_button(
                     rx.cond(
-                        rx.State.dark_mode,
+                        ClaimsState.dark_mode,
                         rx.icon("sun", size=20),
                         rx.icon("moon", size=20),
                     ),
-                    on_click=rx.State.toggle_dark_mode,
+                    on_click=ClaimsState.toggle_dark_mode,
                     variant="ghost",
                     size="3",
                     color=COLORS["gray_600"],
@@ -95,13 +97,7 @@ def navbar() -> rx.Component:
             spacing="6",
             align="center",
             width="100%",
+            class_name="flex items-center justify-between gap-6 w-full",
         ),
-        padding="4",
-        background=COLORS["white"],
-        box_shadow=SHADOWS["sm"],
-        border_bottom=f"1px solid {COLORS['gray_200']}",
-        width="100%",
-        position="sticky",
-        top="0",
-        z_index="50",
+        class_name="px-4 py-4 bg-white shadow-sm border-b border-gray-200 w-full sticky top-0 z-50",
     )

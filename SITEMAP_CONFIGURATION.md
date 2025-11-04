@@ -12,7 +12,7 @@ import reflex as rx
 
 config = rx.Config(
     app_name="claimsiq",
-    frontend_port=5000,
+    frontend_port=3000,
     backend_port=8001,
     backend_host="0.0.0.0",
     frontend_host="0.0.0.0",
@@ -34,7 +34,7 @@ The SitemapPlugin:
 ## Accessing the Sitemap
 
 Once your app is running, the sitemap is available at:
-- **Local Development**: `http://localhost:5000/sitemap.xml`
+- **Local Development**: `http://localhost:3000/sitemap.xml`
 - **Replit**: `https://your-repl.repl.co/sitemap.xml`
 - **Production**: `https://yourdomain.com/sitemap.xml`
 
@@ -110,7 +110,7 @@ After deploying:
 1. **Test locally**:
    ```bash
    reflex run
-   # Visit http://localhost:5000/sitemap.xml
+   # Visit http://localhost:3000/sitemap.xml
    ```
 
 2. **Test on Replit**:

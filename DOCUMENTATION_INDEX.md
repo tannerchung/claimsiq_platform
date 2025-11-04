@@ -335,7 +335,7 @@ This is your master index to all ClaimsIQ documentation. Start here to find what
 
 **Contains:**
 - Common deployment issues and solutions
-- Port configuration (5000 frontend, 8001 backend)
+- Port configuration (3000 frontend, 8001 backend)
 - Dependency installation troubleshooting
 - Database connection issues
 - Reflex-specific debugging tips

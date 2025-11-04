@@ -1,6 +1,7 @@
 import reflex as rx
 import httpx
 from typing import List, Dict
+from datetime import datetime, timezone
 from claimsiq.config import API_URL
 
 class ClaimsState(rx.State):
@@ -9,9 +10,12 @@ class ClaimsState(rx.State):
     risk_analysis: Dict = {}
     provider_metrics: List[Dict] = []
 
-    is_loading: bool = False
+    is_loading_summary: bool = False
+    is_loading_claims: bool = False
     error_message: str = ""
     selected_status: str = "all"
+    time_range: str = "90d"
+    last_updated: str = ""
 
     total_claims: int = 0
     approved_count: int = 0
@@ -51,10 +55,11 @@ class ClaimsState(rx.State):
     show_notification: bool = False
     
     async def load_summary(self):
-        self.is_loading = True
+        self.is_loading_summary = True
         try:
+            params = {"time_range": self.time_range}
             async with httpx.AsyncClient() as client:
-                response = await client.get(f"{API_URL}/api/claims/summary")
+                response = await client.get(f"{API_URL}/api/claims/summary", params=params)
                 if response.status_code == 200:
                     data = response.json()
                     self.summary_stats = data
@@ -63,38 +68,95 @@ class ClaimsState(rx.State):
                     self.pending_count = data.get("pending_count", 0)
                     self.flagged_count = data.get("flagged_count", 0)
                     self.approval_rate = data.get("approval_rate", 0.0)
+                    self.last_updated = datetime.now(timezone.utc).isoformat()
                     self.error_message = ""
                 else:
                     self.error_message = f"Failed to load summary: {response.status_code}"
         except Exception as e:
             self.error_message = f"Error loading summary: {str(e)}"
         finally:
-            self.is_loading = False
+            self.is_loading_summary = False
     
     async def load_claims(self):
-        self.is_loading = True
+        self.is_loading_claims = True
         try:
-            params = {"limit": 100, "offset": 0}
+            params = {
+                "limit": 100,
+                "offset": 0,
+                "time_range": self.time_range if self.time_range else None,
+                "date_start": self.date_start if self.date_start else None,
+                "date_end": self.date_end if self.date_end else None,
+            }
             if self.selected_status != "all":
                 params["status"] = self.selected_status
-            
+            if self.risk_filters:
+                params["risk_levels"] = ",".join(self.risk_filters)
+            # Remove None values to avoid sending them
+            params = {k: v for k, v in params.items() if v is not None}
+
             async with httpx.AsyncClient() as client:
                 response = await client.get(f"{API_URL}/api/claims", params=params)
                 if response.status_code == 200:
                     data = response.json()
-                    self.claims_data = data.get("claims", [])
+                    claims = data.get("claims", [])
+
+                    for claim in claims:
+                        # Normalize numeric fields
+                        amount_raw = claim.get("claim_amount", 0) or 0
+                        try:
+                            amount = float(amount_raw)
+                        except (TypeError, ValueError):
+                            amount = 0.0
+
+                        score_raw = claim.get("risk_score", 0) or 0
+                        try:
+                            score = float(score_raw)
+                        except (TypeError, ValueError):
+                            score = 0.0
+
+                        pending_days = claim.get("days_pending")
+                        if pending_days is None:
+                            pending_days = claim.get("pending_days", 0)
+                        try:
+                            pending_days = int(pending_days or 0)
+                        except (TypeError, ValueError):
+                            pending_days = 0
+
+                        status = str(claim.get("status", "")).lower()
+                        reasons: list[str] = []
+
+                        if amount > 5000:
+                            reasons.append("Amount > $5,000")
+                        if status == "pending" and pending_days > 30:
+                            reasons.append("Pending > 30 days")
+                        if claim.get("risk_reason"):
+                            reasons.append(str(claim["risk_reason"]))
+
+                        claim["ui_risk_reason"] = " • ".join(dict.fromkeys(reasons)) if reasons else ""
+
+                        if score >= 0.7:
+                            claim["ui_risk_level"] = "high"
+                        elif score >= 0.4:
+                            claim["ui_risk_level"] = "medium"
+                        else:
+                            claim["ui_risk_level"] = "low"
+
+                        claim["ui_has_reason"] = bool(reasons)
+
+                    self.claims_data = claims
                     self.error_message = ""
                 else:
                     self.error_message = f"Failed to load claims: {response.status_code}"
         except Exception as e:
             self.error_message = f"Error loading claims: {str(e)}"
         finally:
-            self.is_loading = False
+            self.is_loading_claims = False
     
     async def load_risk_analysis(self):
         try:
+            params = {"time_range": self.time_range}
             async with httpx.AsyncClient() as client:
-                response = await client.get(f"{API_URL}/api/analytics/risks")
+                response = await client.get(f"{API_URL}/api/analytics/risks", params=params)
                 if response.status_code == 200:
                     self.risk_analysis = response.json()
         except Exception as e:
@@ -109,9 +171,10 @@ class ClaimsState(rx.State):
         except Exception as e:
             print(f"Error loading providers: {str(e)}")
     
-    def set_status_filter(self, status: str):
+    async def set_status_filter(self, status: str):
         self.selected_status = status
         self.current_page = 1  # Reset to first page when filtering
+        await self.load_claims()
 
     def set_search_query(self, query: str):
         self.search_query = query
@@ -149,6 +212,24 @@ class ClaimsState(rx.State):
                 if query in str(claim.get("id", "")).lower()
                 or query in str(claim.get("patient_name", "")).lower()
                 or query in str(claim.get("status", "")).lower()
+                or query in str(claim.get("provider_name", "")).lower()
+                or query in str(claim.get("provider_id", "")).lower()
+            ]
+
+        if self.risk_filters:
+            def bucket(score):
+                if score is None:
+                    return "unknown"
+                if score >= 0.7:
+                    return "high"
+                if score >= 0.4:
+                    return "medium"
+                return "low"
+
+            claims = [
+                claim
+                for claim in claims
+                if bucket(claim.get("risk_score")) in self.risk_filters
             ]
 
         return claims
@@ -202,21 +283,34 @@ class ClaimsState(rx.State):
         return self.current_page >= self.total_pages
 
     # Advanced Filters
-    def set_date_range(self, start: str, end: str):
+    async def set_date_range(self, start: str, end: str):
         self.date_start = start
         self.date_end = end
         self.current_page = 1
+        await self.load_claims()
 
     def set_amount_range(self, min_val: float, max_val: float):
         self.amount_min = min_val
         self.amount_max = max_val
         self.current_page = 1
 
-    def set_risk_filters(self, filters: list[str]):
+    async def set_risk_filters(self, filters: list[str]):
         self.risk_filters = filters
         self.current_page = 1
+        await self.load_claims()
 
-    def clear_filters(self):
+    async def toggle_risk(self, key: str):
+        """Toggle a single risk filter."""
+        filters = set(self.risk_filters)
+        if key in filters:
+            filters.remove(key)
+        else:
+            filters.add(key)
+        self.risk_filters = list(filters)
+        self.current_page = 1
+        await self.load_claims()
+
+    async def clear_filters(self):
         self.date_start = ""
         self.date_end = ""
         self.amount_min = 0.0
@@ -225,6 +319,14 @@ class ClaimsState(rx.State):
         self.search_query = ""
         self.selected_status = "all"
         self.current_page = 1
+        self.time_range = "90d"
+        await self.load_all_data()
+
+    async def update_date_start(self, start: str):
+        await self.set_date_range(start, self.date_end)
+
+    async def update_date_end(self, end: str):
+        await self.set_date_range(self.date_start, end)
 
     # Modal actions
     def open_claim_modal(self, claim_id: str):
@@ -234,6 +336,12 @@ class ClaimsState(rx.State):
     def close_claim_modal(self):
         self.show_claim_modal = False
         self.selected_claim_id = ""
+
+    def set_show_claim_modal(self, value: bool):
+        """Explicit setter to avoid relying on auto-generated setters."""
+        self.show_claim_modal = value
+        if not value:
+            self.selected_claim_id = ""
 
     @rx.var
     def selected_claim(self) -> Dict:
@@ -304,6 +412,50 @@ class ClaimsState(rx.State):
         await self.load_claims()
         await self.load_risk_analysis()
         await self.load_providers()
+
+    async def refresh_all_data(self):
+        self.show_toast("Refreshing data...", "info")
+        await self.load_all_data()
+        self.show_toast("Dashboard updated", "success")
+
+    async def drill_into_status(self, status: str):
+        """Set status filter from metric cards and fetch data."""
+        self.selected_status = status
+        self.current_page = 1
+        await self.load_claims()
+
+    async def set_time_range(self, range_key: str):
+        """Update the global time range and reload dependent data."""
+        self.time_range = range_key
+        await self.load_all_data()
+
+    @rx.var
+    def last_updated_label(self) -> str:
+        if not self.last_updated:
+            return "Just now"
+        try:
+            updated_dt = datetime.fromisoformat(self.last_updated)
+            return updated_dt.astimezone().strftime("%b %d, %Y • %I:%M %p")
+        except ValueError:
+            return "Just now"
+
+    @rx.var
+    def approval_rate_label(self) -> str:
+        if self.approval_rate and self.approval_rate > 0:
+            return f"{self.approval_rate * 100:.1f}% approval rate"
+        return "Approval insights"
+
+    @rx.var
+    def risk_low_active(self) -> bool:
+        return "low" in self.risk_filters
+
+    @rx.var
+    def risk_medium_active(self) -> bool:
+        return "medium" in self.risk_filters
+
+    @rx.var
+    def risk_high_active(self) -> bool:
+        return "high" in self.risk_filters
 
     # Data Management
     is_loading_data: bool = False

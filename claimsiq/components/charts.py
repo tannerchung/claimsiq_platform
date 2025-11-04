@@ -1,6 +1,6 @@
 import reflex as rx
 import plotly.graph_objects as go
-from claimsiq.theme import COLORS, SHADOWS
+from claimsiq.theme import COLORS
 from typing import List, Dict
 
 def claims_trend_chart(data: List[Dict] = None) -> rx.Component:
@@ -50,6 +50,12 @@ def claims_trend_chart(data: List[Dict] = None) -> rx.Component:
         ),
     )
 
+    first_value = data[0]["count"]
+    last_value = data[-1]["count"]
+    delta = last_value - first_value
+    delta_text = f"{abs(delta)} increase" if delta >= 0 else f"{abs(delta)} decrease"
+    delta_prefix = "↗︎" if delta >= 0 else "↘︎"
+
     return rx.box(
         rx.vstack(
             rx.hstack(
@@ -58,16 +64,21 @@ def claims_trend_chart(data: List[Dict] = None) -> rx.Component:
                 rx.badge("Last 6 months", color_scheme="blue", variant="soft"),
                 width="100%",
                 align="center",
+                class_name="flex items-center justify-between w-full",
+                margin_bottom="4",
             ),
-            rx.plotly(data=fig),
-            spacing="3",
+            rx.plotly(data=fig, aria_label="Line chart showing claim volume trend over time"),
+            rx.text(
+                f"{delta_prefix} {delta_text} between {data[0]['date']} and {data[-1]['date']}. Hover to see monthly counts.",
+                size="1",
+                color=COLORS["gray_500"],
+                margin_top="3",
+            ),
+            spacing="0",
             width="100%",
         ),
-        padding="5",
-        background=COLORS["white"],
-        border_radius="0.75rem",
-        box_shadow=SHADOWS["md"],
-        width="100%",
+        padding="6",
+        class_name="bg-white rounded-xl shadow-md w-full",
     )
 
 
@@ -113,6 +124,8 @@ def risk_distribution_chart(data: Dict = None) -> rx.Component:
         ),
     )
 
+    dominant_label = labels[values.index(max(values))] if values else "No data"
+
     return rx.box(
         rx.vstack(
             rx.hstack(
@@ -123,19 +136,25 @@ def risk_distribution_chart(data: Dict = None) -> rx.Component:
                     size="2",
                     color=COLORS["gray_500"],
                     weight="medium",
+                    class_name="text-gray-500 font-medium",
                 ),
                 width="100%",
                 align="center",
+                class_name="flex items-center justify-between w-full",
+                margin_bottom="4",
             ),
-            rx.plotly(data=fig),
-            spacing="3",
+            rx.plotly(data=fig, aria_label="Donut chart showing risk distribution of claims"),
+            rx.text(
+                f"{dominant_label} represents the largest share. Use risk filters to drill into specific segments.",
+                size="1",
+                color=COLORS["gray_500"],
+                margin_top="3",
+            ),
+            spacing="0",
             width="100%",
         ),
-        padding="5",
-        background=COLORS["white"],
-        border_radius="0.75rem",
-        box_shadow=SHADOWS["md"],
-        width="100%",
+        padding="6",
+        class_name="bg-white rounded-xl shadow-md w-full",
     )
 
 
@@ -194,6 +213,8 @@ def status_breakdown_chart(data: Dict = None) -> rx.Component:
         ),
     )
 
+    top_status = statuses[values.index(max(values))] if values else "No status"
+
     return rx.box(
         rx.vstack(
             rx.hstack(
@@ -206,14 +227,19 @@ def status_breakdown_chart(data: Dict = None) -> rx.Component:
                 ),
                 width="100%",
                 align="center",
+                class_name="flex items-center justify-between w-full",
+                margin_bottom="4",
             ),
-            rx.plotly(data=fig),
-            spacing="3",
+            rx.plotly(data=fig, aria_label="Bar chart showing counts by claim status"),
+            rx.text(
+                f"{top_status} leads this period. Compare bars to spot bottlenecks or review flagged claims.",
+                size="1",
+                color=COLORS["gray_500"],
+                margin_top="3",
+            ),
+            spacing="0",
             width="100%",
         ),
-        padding="5",
-        background=COLORS["white"],
-        border_radius="0.75rem",
-        box_shadow=SHADOWS["md"],
-        width="100%",
+        padding="6",
+        class_name="bg-white rounded-xl shadow-md w-full",
     )

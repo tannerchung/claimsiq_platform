@@ -672,7 +672,7 @@ Local Machine
 ```
 Replit Container
 ├── Reflex process (manages both frontend & backend)
-│   ├── Frontend: Port 5000 (0.0.0.0)
+│   ├── Frontend: Port 3000 (0.0.0.0)
 │   ├── Backend: Port 8001 (0.0.0.0)
 │   └── Compiled React app served by Reflex
 ├── SQLite database (claimsiq.db)
@@ -685,7 +685,7 @@ Replit Container
 # rxconfig.py
 config = rx.Config(
     app_name="claimsiq",
-    frontend_port=5000,
+    frontend_port=3000,
     backend_port=8001,
     backend_host="0.0.0.0",
     frontend_host="0.0.0.0",

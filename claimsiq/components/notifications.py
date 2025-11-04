@@ -15,9 +15,9 @@ def notification_toast() -> rx.Component:
     }
 
     icon_map = {
-        "success": "check-circle",
-        "error": "x-circle",
-        "warning": "alert-triangle",
+        "success": "circle_check",
+        "error": "circle_x",
+        "warning": "triangle_alert",
         "info": "info",
     }
 

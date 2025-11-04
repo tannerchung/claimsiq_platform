@@ -147,7 +147,8 @@ def sortable_header(
     column: str,
     current_column: str,
     current_direction: str,
-    on_click
+    on_click,
+    class_name: str | None = None,
 ) -> rx.Component:
     """Sortable table header with indicator"""
     is_active = column == current_column
@@ -157,10 +158,18 @@ def sortable_header(
             rx.text(label, weight="medium"),
             rx.cond(
                 is_active,
-                rx.icon(
-                    "chevron-down" if current_direction == "desc" else "chevron-up",
-                    size=14,
-                    color=COLORS["primary"],
+                rx.cond(
+                    current_direction == "desc",
+                    rx.icon(
+                        "chevron-down",
+                        size=14,
+                        color=COLORS["primary"],
+                    ),
+                    rx.icon(
+                        "chevron-up",
+                        size=14,
+                        color=COLORS["primary"],
+                    ),
                 ),
                 rx.icon(
                     "chevron-down",
@@ -174,4 +183,5 @@ def sortable_header(
         on_click=on_click,
         cursor="pointer",
         _hover={"background": COLORS["gray_50"]},
+        class_name=class_name,
     )

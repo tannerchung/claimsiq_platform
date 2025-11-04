@@ -11,13 +11,13 @@ def detail_row(label: str, value: rx.Component) -> rx.Component:
             label,
             size="2",
             weight="medium",
-            color=COLORS["gray_600"],
-            width="140px",
+            class_name="text-gray-600 w-36",
         ),
         value,
         spacing="4",
         width="100%",
         align="center",
+        class_name="flex items-center gap-4 w-full",
     )
 
 
@@ -31,18 +31,19 @@ def claim_detail_modal() -> rx.Component:
                     rx.heading(
                         f"Claim #{ClaimsState.selected_claim_id}",
                         size="6",
-                        color=COLORS["gray_900"],
+                        class_name="text-gray-900",
                     ),
                     rx.spacer(),
                     rx.dialog.close(
                         rx.icon_button(
                             rx.icon("x", size=20),
                             variant="ghost",
-                            color=COLORS["gray_500"],
+                            class_name="text-gray-500",
                         ),
                     ),
                     width="100%",
                     align="center",
+                    class_name="flex items-center justify-between w-full",
                 ),
 
                 rx.separator(),
@@ -88,7 +89,11 @@ def claim_detail_modal() -> rx.Component:
                         ),
                         detail_row(
                             "Risk Score",
-                            risk_badge(ClaimsState.selected_claim["risk_score"]),
+                            risk_badge(
+                                ClaimsState.selected_claim["risk_score"],
+                                ClaimsState.selected_claim["ui_risk_reason"],
+                                ClaimsState.selected_claim["ui_has_reason"],
+                            ),
                         ),
                         detail_row(
                             "Patient",
@@ -153,7 +158,7 @@ def claim_detail_modal() -> rx.Component:
                 rx.hstack(
                     rx.button(
                         rx.hstack(
-                            rx.icon("check-circle", size=18),
+                            rx.icon("circle_check", size=18),
                             rx.text("Approve"),
                             spacing="2",
                         ),
@@ -162,7 +167,7 @@ def claim_detail_modal() -> rx.Component:
                     ),
                     rx.button(
                         rx.hstack(
-                            rx.icon("x-circle", size=18),
+                            rx.icon("circle_x", size=18),
                             rx.text("Deny"),
                             spacing="2",
                         ),
@@ -191,5 +196,5 @@ def claim_detail_modal() -> rx.Component:
             padding="6",
         ),
         open=ClaimsState.show_claim_modal,
-        on_open_change=lambda is_open: ClaimsState.close_claim_modal() if not is_open else None,
+        on_open_change=ClaimsState.set_show_claim_modal,
     )

@@ -59,20 +59,20 @@ The data loading script can download real insurance claims data from Kaggle:
 ### Running the Application
 
 ```bash
-# Start the application (runs on ports 5000 and 8001)
-reflex run --env prod --frontend-port 5000 --backend-port 8001
+# Start the application (runs on ports 3000 and 8001)
+reflex run --env prod --frontend-port 3000 --backend-port 8001
 
 # Or on Replit, just press the "Run" button!
 
-# Open browser to http://localhost:5000
+# Open browser to http://localhost:3000
 ```
 
-**Note:** The app runs on port 5000 (frontend) and 8001 (backend). Reflex handles both automatically.
+**Note:** The app runs on port 3000 (frontend) and 8001 (backend). Reflex handles both automatically.
 
 ### Loading Data (3 Options)
 
 **Option 1: UI Data Management (Easiest)**
-- Open the dashboard at `http://localhost:5000`
+- Open the dashboard at `http://localhost:3000`
 - Use the **Data Management** panel at the top
 - Click **"Load Kaggle Data"** (requires `kaggle.json`) OR **"Generate Sample Data"**
 - Data loads automatically, no command line needed!
@@ -314,7 +314,7 @@ POST   /api/data/clear-data
 ```python
 config = rx.Config(
     app_name="claimsiq",
-    frontend_port=5000,
+    frontend_port=3000,
     backend_port=8001,
     backend_host="0.0.0.0",
     frontend_host="0.0.0.0",

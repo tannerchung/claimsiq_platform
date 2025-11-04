@@ -15,9 +15,9 @@ ClaimsIQ can load real insurance claims data from Kaggle using the `kagglehub` l
 1. **Set up `kaggle.json`** (one-time setup, see below)
 2. **Start the application:**
    ```bash
-   reflex run --env prod --frontend-port 5000 --backend-port 8001
+   reflex run --env prod --frontend-port 3000 --backend-port 8001
    ```
-3. **Open dashboard:** `http://localhost:5000`
+3. **Open dashboard:** `http://localhost:3000`
 4. **Click "Load Kaggle Data"** button in the Data Management panel
 5. **Wait 1-2 minutes** for download (first time only, cached after)
 6. **Done!** Data appears automatically in dashboard
@@ -134,10 +134,10 @@ pip install -r requirements.txt
 
 1. Start the application:
    ```bash
-   reflex run --env prod --frontend-port 5000 --backend-port 8001
+   reflex run --env prod --frontend-port 3000 --backend-port 8001
    ```
 
-2. Open `http://localhost:5000` in your browser
+2. Open `http://localhost:3000` in your browser
 
 3. Click **"Load Kaggle Data"** in the Data Management panel
 
@@ -425,11 +425,11 @@ After loading the data:
 
 1. **Start the application:**
    ```bash
-   reflex run --env prod --frontend-port 5000 --backend-port 8001
+   reflex run --env prod --frontend-port 3000 --backend-port 8001
    ```
 
 2. **Access the dashboard:**
-   - Frontend: http://localhost:5000
+   - Frontend: http://localhost:3000
    - Backend API: http://localhost:8001
    - API Docs: http://localhost:8001/docs
 
