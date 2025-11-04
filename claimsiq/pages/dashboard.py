@@ -21,27 +21,59 @@ def dashboard() -> rx.Component:
                         ),
                         rx.fragment(),
                     ),
-                    rx.heading("Dashboard", size="8"),
+                    rx.heading("Dashboard", size="8", color=COLORS["gray_900"]),
                     rx.grid(
                         metric_card(
-                            "Total Claims",
-                            rx.text(ClaimsState.total_claims),
-                            COLORS["primary"]
+                            label="Total Claims",
+                            value=rx.text(
+                                ClaimsState.total_claims,
+                                size="8",
+                                weight="bold",
+                                color=COLORS["primary"]
+                            ),
+                            icon="file-text",
+                            color=COLORS["primary"],
+                            trend="+12%",
+                            trend_direction="up"
                         ),
                         metric_card(
-                            "Approved",
-                            rx.text(ClaimsState.approved_count),
-                            COLORS["success"]
+                            label="Approved",
+                            value=rx.text(
+                                ClaimsState.approved_count,
+                                size="8",
+                                weight="bold",
+                                color=COLORS["success"]
+                            ),
+                            icon="check-circle",
+                            color=COLORS["success"],
+                            trend="+8%",
+                            trend_direction="up"
                         ),
                         metric_card(
-                            "Pending",
-                            rx.text(ClaimsState.pending_count),
-                            COLORS["warning"]
+                            label="Pending",
+                            value=rx.text(
+                                ClaimsState.pending_count,
+                                size="8",
+                                weight="bold",
+                                color=COLORS["warning"]
+                            ),
+                            icon="clock",
+                            color=COLORS["warning"],
+                            trend="-3%",
+                            trend_direction="down"
                         ),
                         metric_card(
-                            "Flagged",
-                            rx.text(ClaimsState.flagged_count),
-                            COLORS["danger"]
+                            label="Flagged",
+                            value=rx.text(
+                                ClaimsState.flagged_count,
+                                size="8",
+                                weight="bold",
+                                color=COLORS["danger"]
+                            ),
+                            icon="alert-triangle",
+                            color=COLORS["danger"],
+                            trend="+5%",
+                            trend_direction="up"
                         ),
                         columns="4",
                         spacing="4",
@@ -51,14 +83,14 @@ def dashboard() -> rx.Component:
                     spacing="6",
                     width="100%",
                 ),
-                padding="6",
+                padding="8",
                 max_width="1400px",
                 margin="0 auto",
             ),
             spacing="0",
             width="100%",
         ),
-        background=COLORS["light_gray"],
+        background=COLORS["bg_secondary"],
         min_height="100vh",
         on_mount=ClaimsState.load_all_data,
     )

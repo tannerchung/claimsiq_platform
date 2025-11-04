@@ -1,5 +1,5 @@
 import reflex as rx
-from claimsiq.theme import COLORS, FONT_SIZES, SPACING
+from claimsiq.theme import COLORS, FONT_SIZES, SPACING, SHADOWS
 from claimsiq.state import ClaimsState
 
 def get_risk_color(risk_score: float) -> str:
@@ -8,6 +8,57 @@ def get_risk_color(risk_score: float) -> str:
     elif risk_score >= 0.4:
         return COLORS["warning"]
     return COLORS["success"]
+
+def risk_badge(risk_score: float) -> rx.Component:
+    """Visual risk indicator with color, icon, and label"""
+    return rx.cond(
+        risk_score >= 0.7,
+        rx.badge(
+            rx.hstack(
+                rx.icon("alert-triangle", size=14),
+                rx.text(f"{risk_score:.2f}", size="2", weight="medium"),
+                spacing="1",
+                align="center",
+            ),
+            color_scheme="red",
+            variant="solid",
+        ),
+        rx.cond(
+            risk_score >= 0.4,
+            rx.badge(
+                rx.hstack(
+                    rx.icon("alert-circle", size=14),
+                    rx.text(f"{risk_score:.2f}", size="2", weight="medium"),
+                    spacing="1",
+                    align="center",
+                ),
+                color_scheme="orange",
+                variant="soft",
+            ),
+            rx.badge(
+                rx.hstack(
+                    rx.icon("check-circle", size=14),
+                    rx.text(f"{risk_score:.2f}", size="2", weight="medium"),
+                    spacing="1",
+                    align="center",
+                ),
+                color_scheme="green",
+                variant="soft",
+            ),
+        ),
+    )
+
+def status_badge(status: str) -> rx.Component:
+    """Color-coded status badges"""
+    # Color mapping for different statuses
+    return rx.match(
+        status,
+        ("approved", rx.badge(status.capitalize(), color_scheme="green", variant="soft")),
+        ("pending", rx.badge(status.capitalize(), color_scheme="blue", variant="soft")),
+        ("denied", rx.badge(status.capitalize(), color_scheme="red", variant="soft")),
+        ("flagged", rx.badge(status.capitalize(), color_scheme="orange", variant="soft")),
+        rx.badge(status.capitalize(), color_scheme="gray", variant="soft"),
+    )
 
 def claims_table() -> rx.Component:
     return rx.box(
@@ -45,17 +96,21 @@ def claims_table() -> rx.Component:
                             rx.foreach(
                                 ClaimsState.claims_data,
                                 lambda claim: rx.table.row(
-                                    rx.table.cell(claim["id"]),
-                                    rx.table.cell(claim["claim_date"]),
-                                    rx.table.cell(f"${claim['claim_amount']:,.2f}"),
                                     rx.table.cell(
-                                        rx.badge(claim["status"], variant="soft")
+                                        rx.text(claim["id"], weight="medium")
                                     ),
+                                    rx.table.cell(claim["claim_date"]),
                                     rx.table.cell(
                                         rx.text(
-                                            claim["risk_score"],
-                                            weight="bold"
+                                            f"${claim['claim_amount']:,.2f}",
+                                            weight="medium",
                                         )
+                                    ),
+                                    rx.table.cell(
+                                        status_badge(claim["status"])
+                                    ),
+                                    rx.table.cell(
+                                        risk_badge(claim["risk_score"])
                                     ),
                                 )
                             )
@@ -68,9 +123,9 @@ def claims_table() -> rx.Component:
             spacing="4",
             width="100%",
         ),
-        padding="4",
+        padding="5",
         background=COLORS["white"],
-        border_radius="0.5rem",
-        box_shadow="0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+        border_radius="0.75rem",
+        box_shadow=SHADOWS["md"],
         width="100%",
     )
