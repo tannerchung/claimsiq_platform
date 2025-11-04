@@ -402,6 +402,9 @@ ENABLE_DATA_OPERATIONS=true uvicorn backend.app:app --reload --port 8000
 
 Any process that needs to call the data routes must be started with `ENABLE_DATA_OPERATIONS=true` in its environment.
 
+> ⚠️ Run these commands from the project root so Python can resolve the `backend` package.  
+> If you need to launch the API from somewhere else, export `PYTHONPATH=.` (or `set PYTHONPATH=.` on Windows) before starting `uvicorn`.
+
 ### Replit Deployment
 ```bash
 git push replit main
@@ -450,8 +453,13 @@ python scripts/load_sample_data.py
 
 ### Running Tests (Optional)
 ```bash
+# Dependencies
+pip install -r requirements.txt
+
+# Run suite
 pytest tests/
 ```
+Tests rely on `pandas`; `pytest` will skip the backend suite if the dependency is missing.
 
 ### Code Style
 ```bash

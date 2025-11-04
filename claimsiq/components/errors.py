@@ -96,7 +96,7 @@ def error_callout_with_retry(
                         rx.text("Dismiss", size="2"),
                         spacing="2",
                     ),
-                    on_click=lambda: ClaimsState.set_error_message(""),
+                    on_click=ClaimsState.set_error_message(""),
                     variant="outline",
                     color_scheme="gray",
                     size="2",
@@ -130,7 +130,7 @@ def sample_data_error() -> rx.Component:
     return error_callout_with_retry(
         message="Failed to generate sample data.",
         action_text="Try Again",
-        on_retry=lambda: ClaimsState.generate_sample_data(1000),
+        on_retry=ClaimsState.generate_sample_data(1000),
         troubleshooting="The backend API may not be responding. Check that uvicorn is running and /api/data/generate-sample is accessible.",
     )
 

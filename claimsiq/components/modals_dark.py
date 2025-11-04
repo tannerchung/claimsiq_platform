@@ -15,6 +15,7 @@ Improvements:
 import reflex as rx
 from claimsiq.theme import DARK_COLORS, DARK_SHADOWS
 from claimsiq.state import ClaimsState
+from claimsiq.components.tables_dark import status_badge_dark, risk_badge_dark
 
 
 def dark_detail_field(label: str, value: rx.Component | str, is_empty: bool = False) -> rx.Component:
@@ -101,6 +102,44 @@ def dark_info_card(heading: str, children: list) -> rx.Component:
     )
 
 
+def quick_stat_card(label: str, value: rx.Component | str, icon: str) -> rx.Component:
+    """Compact statistic pill shown at top of the modal."""
+    return rx.box(
+        rx.hstack(
+            rx.icon(icon, size=20, color=DARK_COLORS["primary"]),
+            rx.vstack(
+                rx.text(
+                    label,
+                    size="1",
+                    weight="bold",
+                    style={
+                        "color": DARK_COLORS["text_tertiary"],
+                        "text-transform": "uppercase",
+                        "letter-spacing": "0.05em",
+                    },
+                ),
+                value if isinstance(value, rx.Component) else rx.text(
+                    value,
+                    size="2",
+                    style={"color": DARK_COLORS["text_primary"]},
+                ),
+                spacing="1",
+                align="start",
+            ),
+            spacing="3",
+            align="center",
+        ),
+        style={
+            "background": DARK_COLORS["bg_elevated"],
+            "border": f"1px solid {DARK_COLORS['border']}",
+            "border-radius": "10px",
+            "padding": "16px",
+            "box-shadow": DARK_SHADOWS["sm"],
+        },
+        width="100%",
+    )
+
+
 def claim_detail_modal_dark() -> rx.Component:
     """
     Enhanced dark mode claim details modal with:
@@ -118,11 +157,32 @@ def claim_detail_modal_dark() -> rx.Component:
             rx.vstack(
                 # Modal Header (h1 level)
                 rx.hstack(
-                    rx.heading(
-                        rx.text("Claim #", ClaimsState.selected_claim_id, " (from state) | ", ClaimsState.selected_claim.get("id", "N/A"), " (from computed)", as_="span"),
-                        size="7",
-                        as_="h1",
-                        style={"color": DARK_COLORS["text_primary"]},
+                    rx.vstack(
+                        rx.heading(
+                            rx.text("Claim", as_="span"),
+                            rx.text(ClaimsState.modal_claim.get("id", "—"), as_="span"),
+                            size="7",
+                            as_="h1",
+                            style={"color": DARK_COLORS["text_primary"]},
+                        ),
+                        rx.hstack(
+                            status_badge_dark(ClaimsState.modal_claim.get("status", "unknown")),
+                            risk_badge_dark(ClaimsState.modal_claim.get("risk_score", 0)),
+                            rx.cond(
+                                ClaimsState.modal_claim.get("ui_has_reason", False),
+                                rx.badge(
+                                    ClaimsState.modal_claim.get("ui_risk_reason", ""),
+                                    color_scheme="orange",
+                                    variant="soft",
+                                    size="2",
+                                ),
+                                rx.fragment(),
+                            ),
+                            spacing="3",
+                            align="center",
+                        ),
+                        spacing="3",
+                        align="start",
                     ),
                     rx.spacer(),
                     rx.dialog.close(
@@ -140,6 +200,30 @@ def claim_detail_modal_dark() -> rx.Component:
                     width="100%",
                     align="center",
                     style={"margin-bottom": "24px"},
+                ),
+
+                # Quick stats
+                rx.grid(
+                    quick_stat_card(
+                        "Provider history",
+                        ClaimsState.modal_quick_stats.get("provider_summary", "No provider history available."),
+                        "building-2",
+                    ),
+                    quick_stat_card(
+                        "Similar claims",
+                        ClaimsState.modal_quick_stats.get("similar_summary", "No similar claims found."),
+                        "git-branch",
+                    ),
+                    quick_stat_card(
+                        "Processing status",
+                        ClaimsState.modal_quick_stats.get("days_pending_label", "Pending"),
+                        "timer",
+                    ),
+                    columns="3",
+                    spacing="4",
+                    width="100%",
+                    style={"margin-bottom": "24px"},
+                    class_name="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 w-full",
                 ),
 
                 # Two-column layout
@@ -162,7 +246,7 @@ def claim_detail_modal_dark() -> rx.Component:
                                         },
                                     ),
                                     rx.text(
-                                        ClaimsState.selected_claim.get("claim_amount_formatted", "$0.00"),
+                                        ClaimsState.modal_claim.get("claim_amount_formatted", "$0.00"),
                                         size="7",
                                         weight="bold",
                                         style={"color": DARK_COLORS["primary"]},
@@ -193,7 +277,7 @@ def claim_detail_modal_dark() -> rx.Component:
                                         },
                                     ),
                                     rx.match(
-                                        ClaimsState.selected_claim.get("status", "unknown"),
+                                        ClaimsState.modal_claim.get("status", "unknown"),
                                         ("approved", rx.badge(
                                             rx.hstack(
                                                 rx.icon("circle-check", size=16),
@@ -268,13 +352,13 @@ def claim_detail_modal_dark() -> rx.Component:
                                     ),
                                     rx.hstack(
                                         rx.text(
-                                            ClaimsState.selected_claim.get("risk_score", 0),
+                                            ClaimsState.modal_claim.get("risk_score", 0),
                                             size="6",
                                             weight="bold",
                                             style={"color": DARK_COLORS["text_primary"]},
                                         ),
                                         rx.match(
-                                            ClaimsState.selected_claim.get("ui_risk_level", "low"),
+                                            ClaimsState.modal_claim.get("ui_risk_level", "low"),
                                             ("high", rx.badge(
                                                 rx.hstack(
                                                     rx.icon("triangle-alert", size=14),
@@ -312,12 +396,12 @@ def claim_detail_modal_dark() -> rx.Component:
                                     ),
                                     # Risk reason if present
                                     rx.cond(
-                                        ClaimsState.selected_claim.get("ui_has_reason", False),
+                                        ClaimsState.modal_claim.get("ui_has_reason", False),
                                         rx.box(
                                             rx.hstack(
                                                 rx.icon("info", size=16, color=DARK_COLORS["danger"]),
                                                 rx.text(
-                                                    ClaimsState.selected_claim.get("ui_risk_reason", ""),
+                                                    ClaimsState.modal_claim.get("ui_risk_reason", ""),
                                                     size="2",
                                                     style={"color": DARK_COLORS["danger"]},
                                                 ),
@@ -352,26 +436,26 @@ def claim_detail_modal_dark() -> rx.Component:
                             # Other claim details
                             dark_detail_field(
                                 "Claim Date",
-                                ClaimsState.selected_claim.get("claim_date", "Not available"),
-                                is_empty=ClaimsState.selected_claim.get("claim_date", "") == "",
+                                ClaimsState.modal_claim.get("claim_date", "Not available"),
+                                is_empty=ClaimsState.modal_claim.get("claim_date", "") == "",
                             ),
                             dark_detail_field(
                                 "Provider ID",
-                                ClaimsState.selected_claim.get("provider_id", "Unknown provider"),
+                                ClaimsState.modal_claim.get("provider_id", "Unknown provider"),
                                 is_empty=False,
                             ),
                             dark_detail_field(
                                 "Patient Info",
                                 rx.hstack(
-                                    rx.text(f"Age {ClaimsState.selected_claim.get('patient_age', 'N/A')}", size="2"),
+                                    rx.text(f"Age {ClaimsState.modal_claim.get('patient_age', 'N/A')}", size="2"),
                                     rx.text("•", size="2", style={"color": DARK_COLORS["text_tertiary"]}),
                                     rx.cond(
-                                        ClaimsState.selected_claim.get('patient_gender') == 'M',
+                                        ClaimsState.modal_claim.get('patient_gender') == 'M',
                                         rx.text("Male", size="2"),
                                         rx.text("Female", size="2"),
                                     ),
                                     rx.text("•", size="2", style={"color": DARK_COLORS["text_tertiary"]}),
-                                    rx.text(ClaimsState.selected_claim.get("patient_state", "N/A"), size="2"),
+                                    rx.text(ClaimsState.modal_claim.get("patient_state", "N/A"), size="2"),
                                     spacing="2",
                                 ),
                                 is_empty=False,
@@ -379,8 +463,8 @@ def claim_detail_modal_dark() -> rx.Component:
                             dark_detail_field(
                                 "Procedure",
                                 rx.vstack(
-                                    rx.text(ClaimsState.selected_claim.get("procedure_codes", "Not specified"), weight="bold", size="2"),
-                                    rx.text(ClaimsState.selected_claim.get("procedure_description", ""), size="2", style={"color": DARK_COLORS["text_secondary"]}),
+                                    rx.text(ClaimsState.modal_claim.get("procedure_codes", "Not specified"), weight="bold", size="2"),
+                                    rx.text(ClaimsState.modal_claim.get("procedure_description", ""), size="2", style={"color": DARK_COLORS["text_secondary"]}),
                                     spacing="1",
                                     align="start",
                                 ),
@@ -389,8 +473,8 @@ def claim_detail_modal_dark() -> rx.Component:
                             dark_detail_field(
                                 "Diagnosis",
                                 rx.vstack(
-                                    rx.text(ClaimsState.selected_claim.get("diagnosis_code", "Not specified"), weight="bold", size="2"),
-                                    rx.text(ClaimsState.selected_claim.get("diagnosis_description", ""), size="2", style={"color": DARK_COLORS["text_secondary"]}),
+                                    rx.text(ClaimsState.modal_claim.get("diagnosis_code", "Not specified"), weight="bold", size="2"),
+                                    rx.text(ClaimsState.modal_claim.get("diagnosis_description", ""), size="2", style={"color": DARK_COLORS["text_secondary"]}),
                                     spacing="1",
                                     align="start",
                                 ),
@@ -418,7 +502,7 @@ def claim_detail_modal_dark() -> rx.Component:
                                         rx.vstack(
                                             rx.text(
                                                 rx.cond(
-                                                    ClaimsState.selected_claim.get('status') == 'pending',
+                                                    ClaimsState.modal_claim.get('status') == 'pending',
                                                     "Days Pending",
                                                     "Days to Process",
                                                 ),
@@ -428,8 +512,8 @@ def claim_detail_modal_dark() -> rx.Component:
                                             ),
                                             rx.text(
                                                 rx.cond(
-                                                    ClaimsState.selected_claim.get('days_to_process'),
-                                                    rx.text(ClaimsState.selected_claim.get('days_to_process', 0), " days", as_="span"),
+                                                    ClaimsState.modal_claim.get('days_to_process'),
+                                                    rx.text(ClaimsState.modal_claim.get('days_to_process', 0), " days", as_="span"),
                                                     "Pending review",
                                                 ),
                                                 size="4",
@@ -531,6 +615,8 @@ def claim_detail_modal_dark() -> rx.Component:
                                             style={"color": DARK_COLORS["text_secondary"]},
                                         ),
                                         rx.text_area(
+                                            value=ClaimsState.modal_notes,
+                                            on_change=ClaimsState.set_modal_notes,
                                             placeholder="Enter detailed notes about this claim review...",
                                             size="2",
                                             style={
@@ -543,9 +629,27 @@ def claim_detail_modal_dark() -> rx.Component:
                                                     "box-shadow": f"0 0 0 1px {DARK_COLORS['primary']}",
                                                 },
                                             },
+                                            disabled=ClaimsState.is_saving_notes,
                                             aria_label="Processor notes for this claim",
                                         ),
-                                        spacing="2",
+                                        rx.hstack(
+                                            rx.button(
+                                                rx.hstack(
+                                                    rx.icon("save", size=16),
+                                                    rx.text("Save Notes", size="2", weight="medium"),
+                                                    spacing="2",
+                                                ),
+                                                on_click=ClaimsState.save_modal_notes,
+                                                loading=ClaimsState.is_saving_notes,
+                                                disabled=ClaimsState.is_saving_notes,
+                                                color_scheme="blue",
+                                                variant="soft",
+                                                size="2",
+                                            ),
+                                            justify="end",
+                                            width="100%",
+                                        ),
+                                        spacing="3",
                                         width="100%",
                                     ),
                                     width="100%",
@@ -575,6 +679,29 @@ def claim_detail_modal_dark() -> rx.Component:
                                 "margin-bottom": "8px",
                             },
                         ),
+                        rx.text(
+                            "Add a note for denial/flag actions (optional):",
+                            size="2",
+                            style={"color": DARK_COLORS["text_secondary"], "margin-bottom": "8px"},
+                        ),
+                        rx.text_area(
+                            value=ClaimsState.modal_action_reason,
+                            on_change=ClaimsState.set_modal_action_reason,
+                            placeholder="Document why you are denying or flagging this claim...",
+                            size="2",
+                            style={
+                                "min-height": "80px",
+                                "background": DARK_COLORS["bg_primary"],
+                                "border-color": DARK_COLORS["border"],
+                                "color": DARK_COLORS["text_primary"],
+                                "_focus": {
+                                    "border-color": DARK_COLORS["primary"],
+                                    "box-shadow": f"0 0 0 1px {DARK_COLORS['primary']}",
+                                },
+                            },
+                            disabled=ClaimsState.is_processing_claim,
+                            aria_label="Action reason for deny or flag",
+                        ),
                         rx.hstack(
                             rx.button(
                                 rx.hstack(
@@ -582,7 +709,7 @@ def claim_detail_modal_dark() -> rx.Component:
                                     rx.text("Approve", size="3", weight="bold"),
                                     spacing="2",
                                 ),
-                                on_click=lambda: ClaimsState.approve_claim(ClaimsState.selected_claim_id),
+                                on_click=ClaimsState.approve_claim(ClaimsState.selected_claim_id),
                                 color_scheme="green",
                                 size="3",
                                 style={
@@ -590,6 +717,8 @@ def claim_detail_modal_dark() -> rx.Component:
                                     "padding": "16px 24px",
                                     "_hover": {"transform": "translateY(-2px)"},
                                 },
+                                loading=ClaimsState.is_processing_claim,
+                                disabled=ClaimsState.is_processing_claim,
                                 aria_label="Approve this claim",
                             ),
 
@@ -599,7 +728,7 @@ def claim_detail_modal_dark() -> rx.Component:
                                     rx.text("Deny", size="3", weight="bold"),
                                     spacing="2",
                                 ),
-                                on_click=lambda: ClaimsState.deny_claim(ClaimsState.selected_claim_id),
+                                on_click=ClaimsState.deny_claim(ClaimsState.selected_claim_id),
                                 color_scheme="red",
                                 size="3",
                                 style={
@@ -607,6 +736,8 @@ def claim_detail_modal_dark() -> rx.Component:
                                     "padding": "16px 24px",
                                     "_hover": {"transform": "translateY(-2px)"},
                                 },
+                                loading=ClaimsState.is_processing_claim,
+                                disabled=ClaimsState.is_processing_claim,
                                 aria_label="Deny this claim",
                             ),
 
@@ -616,7 +747,7 @@ def claim_detail_modal_dark() -> rx.Component:
                                     rx.text("Flag for Review", size="3", weight="bold"),
                                     spacing="2",
                                 ),
-                                on_click=lambda: ClaimsState.flag_claim(ClaimsState.selected_claim_id),
+                                on_click=ClaimsState.flag_claim(ClaimsState.selected_claim_id),
                                 color_scheme="orange",
                                 variant="outline",
                                 size="3",
@@ -626,13 +757,15 @@ def claim_detail_modal_dark() -> rx.Component:
                                     "border-width": "2px",
                                     "_hover": {"transform": "translateY(-2px)"},
                                 },
+                                loading=ClaimsState.is_processing_claim,
+                                disabled=ClaimsState.is_processing_claim,
                                 aria_label="Flag this claim for further review",
                             ),
 
                             spacing="4",
                             width="100%",
                         ),
-                        spacing="0",
+                        spacing="3",
                         width="100%",
                     ),
                     style={

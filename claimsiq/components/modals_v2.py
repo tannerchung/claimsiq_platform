@@ -334,6 +334,30 @@ def claim_detail_modal_v2() -> rx.Component:
                         margin_bottom="4",
                     ),
 
+                    rx.box(
+                        rx.vstack(
+                            rx.text(
+                                "Action Note (optional)",
+                                size="2",
+                                weight="bold",
+                                class_name="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-300",
+                            ),
+                            rx.text_area(
+                                value=ClaimsState.modal_action_reason,
+                                on_change=ClaimsState.set_modal_action_reason,
+                                placeholder="Add context that will be included with deny or flag actions...",
+                                size="2",
+                                min_height="90px",
+                                class_name="w-full text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 rounded-lg",
+                                disabled=ClaimsState.is_processing_claim,
+                            ),
+                            spacing="3",
+                            width="100%",
+                        ),
+                        width="100%",
+                        class_name="bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-4",
+                    ),
+
                     # Action Buttons Row
                     rx.hstack(
                         rx.button(
@@ -346,11 +370,12 @@ def claim_detail_modal_v2() -> rx.Component:
                                 rx.text("Approve", size="3", weight="bold"),
                                 spacing="2",
                             ),
-                            on_click=lambda: ClaimsState.approve_claim(ClaimsState.selected_claim_id),
+                            on_click=ClaimsState.approve_claim(ClaimsState.selected_claim_id),
                             color_scheme="green",
                             size="3",
                             class_name="flex-1",
                             disabled=ClaimsState.is_processing_claim,
+                            loading=ClaimsState.is_processing_claim,
                         ),
                         rx.button(
                             rx.hstack(
@@ -362,11 +387,12 @@ def claim_detail_modal_v2() -> rx.Component:
                                 rx.text("Deny", size="3", weight="bold"),
                                 spacing="2",
                             ),
-                            on_click=lambda: ClaimsState.deny_claim(ClaimsState.selected_claim_id),
+                            on_click=ClaimsState.deny_claim(ClaimsState.selected_claim_id),
                             color_scheme="red",
                             size="3",
                             class_name="flex-1",
                             disabled=ClaimsState.is_processing_claim,
+                            loading=ClaimsState.is_processing_claim,
                         ),
                         rx.button(
                             rx.hstack(
@@ -378,12 +404,13 @@ def claim_detail_modal_v2() -> rx.Component:
                                 rx.text("Flag for Review", size="3", weight="bold"),
                                 spacing="2",
                             ),
-                            on_click=lambda: ClaimsState.flag_claim(ClaimsState.selected_claim_id),
+                            on_click=ClaimsState.flag_claim(ClaimsState.selected_claim_id),
                             color_scheme="orange",
                             variant="outline",
                             size="3",
                             class_name="flex-1",
                             disabled=ClaimsState.is_processing_claim,
+                            loading=ClaimsState.is_processing_claim,
                         ),
                         spacing="3",
                         width="100%",
@@ -397,7 +424,7 @@ def claim_detail_modal_v2() -> rx.Component:
                     rx.text(
                         "Select a claim from the table to view its details.",
                         size="2",
-                        color=COLORS["gray_600"],
+                        class_name="text-slate-500 dark:text-slate-300",
                     ),
                     padding="6",
                     width="100%",
@@ -405,7 +432,7 @@ def claim_detail_modal_v2() -> rx.Component:
             ),
             max_width="900px",
             padding="6",
-            class_name="bg-white rounded-xl shadow-2xl",
+            class_name="bg-white/95 dark:bg-slate-900/95 border border-slate-200/70 dark:border-slate-700/60 rounded-2xl shadow-2xl backdrop-blur",
         ),
         open=ClaimsState.show_claim_modal,
         on_open_change=ClaimsState.set_show_claim_modal,

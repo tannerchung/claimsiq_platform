@@ -87,35 +87,35 @@ def enhanced_claims_table() -> rx.Component:
                         "provider_id",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("provider_id"),
+                        ClaimsState.sort_by("provider_id"),
                     ),
                     sortable_header(
                         "Date",
                         "claim_date",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("claim_date"),
+                        ClaimsState.sort_by("claim_date"),
                     ),
                     sortable_header(
                         "Amount",
                         "claim_amount",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("claim_amount"),
+                        ClaimsState.sort_by("claim_amount"),
                     ),
                     sortable_header(
                         "Status",
                         "status",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("status"),
+                        ClaimsState.sort_by("status"),
                     ),
                     sortable_header(
                         "Risk",
                         "risk_score",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("risk_score"),
+                        ClaimsState.sort_by("risk_score"),
                     ),
                     rx.table.column_header_cell("Actions"),
                     background=COLORS["gray_50"],
@@ -168,7 +168,7 @@ def enhanced_claims_table() -> rx.Component:
                             rx.hstack(
                                 rx.icon_button(
                                     rx.icon("eye", size=16),
-                                    on_click=lambda: ClaimsState.select_claim(claim["id"]),
+                                    on_click=ClaimsState.open_claim_modal(claim["id"]),
                                     size="1",
                                     variant="ghost",
                                     color_scheme="blue",
@@ -176,7 +176,7 @@ def enhanced_claims_table() -> rx.Component:
                                 spacing="1",
                             )
                         ),
-                        on_click=lambda: ClaimsState.select_claim(claim["id"]),
+                        on_click=ClaimsState.open_claim_modal(claim["id"]),
                         style={
                             "cursor": "pointer",
                             "_hover": {"background": "#eff6ff"},  # blue-50
@@ -192,5 +192,5 @@ def enhanced_claims_table() -> rx.Component:
         ),
         width="100%",
         overflow_x="auto",
-        class_name="rounded-lg border border-gray-200 shadow-sm",
+        class_name="rounded-2xl border border-slate-200/70 dark:border-slate-700/60 shadow-md bg-white/90 dark:bg-slate-800/95 backdrop-blur",
     )

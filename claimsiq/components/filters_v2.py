@@ -31,7 +31,7 @@ def risk_filter_chip(risk_level: str, label: str, color: str) -> rx.Component:
             rx.text(label, weight="medium"),
             spacing="2",
         ),
-        on_click=lambda: ClaimsState.toggle_risk(risk_level),
+        on_click=ClaimsState.toggle_risk(risk_level),
         color_scheme=color,
         variant=rx.cond(is_active, "solid", "outline"),
         size="2",
@@ -53,7 +53,11 @@ def advanced_filters_panel() -> rx.Component:
             # Header
             rx.hstack(
                 rx.icon("filter", size=20, color=COLORS["primary"]),
-                rx.heading("Filters", size="4", class_name="text-gray-900"),
+                rx.heading(
+                    "Filters",
+                    size="4",
+                    class_name="text-xl font-semibold text-slate-800 dark:text-slate-100",
+                ),
                 rx.spacer(),
                 rx.button(
                     rx.hstack(
@@ -78,7 +82,7 @@ def advanced_filters_panel() -> rx.Component:
                     "Status",
                     size="2",
                     weight="bold",
-                    color=COLORS["gray_700"],
+                    class_name="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-300",
                     margin_bottom="2",
                 ),
                 rx.hstack(
@@ -93,7 +97,7 @@ def advanced_filters_panel() -> rx.Component:
                             rx.badge(ClaimsState.total_claims, color_scheme="gray", variant="soft"),
                             spacing="2",
                         ),
-                        on_click=lambda: ClaimsState.set_status_filter("all"),
+                        on_click=ClaimsState.set_status_filter("all"),
                         color_scheme="gray",
                         variant=rx.cond(ClaimsState.selected_status == "all", "solid", "outline"),
                         size="2",
@@ -109,7 +113,7 @@ def advanced_filters_panel() -> rx.Component:
                             rx.badge(ClaimsState.approved_count, color_scheme="green", variant="soft"),
                             spacing="2",
                         ),
-                        on_click=lambda: ClaimsState.set_status_filter("approved"),
+                        on_click=ClaimsState.set_status_filter("approved"),
                         color_scheme="green",
                         variant=rx.cond(ClaimsState.selected_status == "approved", "solid", "outline"),
                         size="2",
@@ -125,7 +129,7 @@ def advanced_filters_panel() -> rx.Component:
                             rx.badge(ClaimsState.pending_count, color_scheme="blue", variant="soft"),
                             spacing="2",
                         ),
-                        on_click=lambda: ClaimsState.set_status_filter("pending"),
+                        on_click=ClaimsState.set_status_filter("pending"),
                         color_scheme="blue",
                         variant=rx.cond(ClaimsState.selected_status == "pending", "solid", "outline"),
                         size="2",
@@ -141,7 +145,7 @@ def advanced_filters_panel() -> rx.Component:
                             rx.badge(ClaimsState.flagged_count, color_scheme="orange", variant="soft"),
                             spacing="2",
                         ),
-                        on_click=lambda: ClaimsState.set_status_filter("flagged"),
+                        on_click=ClaimsState.set_status_filter("flagged"),
                         color_scheme="orange",
                         variant=rx.cond(ClaimsState.selected_status == "flagged", "solid", "outline"),
                         size="2",
@@ -159,7 +163,7 @@ def advanced_filters_panel() -> rx.Component:
                     "Risk Levels",
                     size="2",
                     weight="bold",
-                    color=COLORS["gray_700"],
+                    class_name="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-300",
                     margin_bottom="2",
                 ),
                 rx.hstack(
@@ -177,12 +181,16 @@ def advanced_filters_panel() -> rx.Component:
                     "Date Range",
                     size="2",
                     weight="bold",
-                    color=COLORS["gray_700"],
+                    class_name="text-sm uppercase tracking-wide text-slate-500 dark:text-slate-300",
                     margin_bottom="2",
                 ),
                 rx.hstack(
                     rx.vstack(
-                        rx.text("Start Date", size="1", color=COLORS["gray_600"]),
+                        rx.text(
+                            "Start Date",
+                            size="1",
+                            class_name="text-xs font-medium text-slate-500 dark:text-slate-300",
+                        ),
                         rx.input(
                             type="date",
                             value=ClaimsState.date_start,
@@ -195,7 +203,11 @@ def advanced_filters_panel() -> rx.Component:
                         class_name="flex-1",
                     ),
                     rx.vstack(
-                        rx.text("End Date", size="1", color=COLORS["gray_600"]),
+                        rx.text(
+                            "End Date",
+                            size="1",
+                            class_name="text-xs font-medium text-slate-500 dark:text-slate-300",
+                        ),
                         rx.input(
                             type="date",
                             value=ClaimsState.date_end,
@@ -224,7 +236,7 @@ def advanced_filters_panel() -> rx.Component:
                         "Active Filters",
                         size="2",
                         weight="bold",
-                        color=COLORS["primary"],
+                        class_name="text-sm uppercase tracking-wide text-blue-500 dark:text-blue-300",
                         margin_bottom="2",
                     ),
                     rx.hstack(
@@ -238,7 +250,7 @@ def advanced_filters_panel() -> rx.Component:
                                 ),
                                 color_scheme="blue",
                                 variant="solid",
-                                on_click=lambda: ClaimsState.set_status_filter("all"),
+                                on_click=ClaimsState.set_status_filter("all"),
                                 cursor="pointer",
                             ),
                             rx.fragment(),
@@ -253,7 +265,7 @@ def advanced_filters_panel() -> rx.Component:
                                 ),
                                 color_scheme="orange",
                                 variant="solid",
-                                on_click=lambda: ClaimsState.set_risk_filters([]),
+                                on_click=ClaimsState.set_risk_filters([]),
                                 cursor="pointer",
                             ),
                             rx.fragment(),
@@ -270,6 +282,6 @@ def advanced_filters_panel() -> rx.Component:
             spacing="0",
             width="100%",
         ),
-        padding="5",
-        class_name="bg-white rounded-xl shadow-md w-full",
+        padding="6",
+        class_name="bg-white/90 dark:bg-slate-800/95 border border-slate-200/70 dark:border-slate-700/60 rounded-2xl shadow-md backdrop-blur w-full",
     )

@@ -32,6 +32,15 @@ def clickable_metric_card(
 
     # Determine if this card is currently active (selected filter)
     is_active = ClaimsState.selected_status == status_filter
+    base_class = (
+        "w-full cursor-pointer rounded-2xl border border-slate-200/70 dark:border-slate-700/60 "
+        "bg-white/90 dark:bg-slate-800/95 backdrop-blur shadow-sm hover:shadow-lg transition-all duration-200 "
+        "hover:-translate-y-1"
+    )
+    active_class = (
+        base_class
+        + " ring-2 ring-blue-200/80 dark:ring-blue-500/40 border-blue-400/80 dark:border-blue-500/60 shadow-lg"
+    )
 
     return rx.box(
         rx.vstack(
@@ -57,6 +66,9 @@ def clickable_metric_card(
                         ),
                         color_scheme="green" if trend_direction == "up" else "red",
                         variant="soft",
+                        class_name="bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-500 dark:text-emerald-300"
+                        if trend_direction == "up"
+                        else "bg-rose-500/15 dark:bg-rose-500/20 text-rose-500 dark:text-rose-300",
                     ),
                     rx.fragment(),
                 ),
@@ -69,7 +81,7 @@ def clickable_metric_card(
                 label,
                 size="3",
                 weight="medium",
-                class_name="text-gray-600",
+                class_name="text-sm font-medium tracking-wide text-slate-500 dark:text-slate-300 uppercase",
                 margin_top="3",
             ),
             # Value
@@ -85,35 +97,31 @@ def clickable_metric_card(
                     ),
                     color_scheme="blue",
                     variant="solid",
-                    class_name="mt-2",
+                    class_name="mt-3 bg-blue-500/15 dark:bg-blue-500/20 text-blue-500 dark:text-blue-300",
                 ),
                 rx.fragment(),
             ),
-            spacing="0",
+            spacing="3",
             align="start",
             width="100%",
         ),
         padding="6",
-        on_click=lambda: ClaimsState.drill_into_status(status_filter),
-        class_name=rx.cond(
-            is_active,
-            "rounded-xl bg-gradient-to-br from-blue-50 to-white shadow-lg border-2 border-blue-400 hover:shadow-xl transition-all duration-200 hover:-translate-y-1 cursor-pointer w-full",
-            "rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer w-full border-2 border-transparent hover:border-gray-200",
-        ),
+        on_click=ClaimsState.drill_into_status(status_filter),
+        class_name=rx.cond(is_active, active_class, base_class),
         role="button",
         aria_label=f"Filter by {label}",
         tabindex="0",
     )
 
 
-def metric_value_large(value: str | int, color: str = COLORS["gray_900"]) -> rx.Component:
+def metric_value_large(value: str | int, color: str | None = None) -> rx.Component:
     """Large value text for metric cards"""
     return rx.text(
         value,
         size="9",
         weight="bold",
-        color=color,
-        class_name="tabular-nums",
+        class_name="tabular-nums text-5xl font-bold text-slate-900 dark:text-slate-100",
+        style={"color": color} if color else None,
     )
 
 
@@ -124,14 +132,15 @@ def metric_trend(text: str) -> rx.Component:
         size="2",
         weight="medium",
         color=COLORS["gray_600"],
+        class_name="text-sm text-slate-500 dark:text-slate-300",
     )
 
 
 def metric_value_with_subtitle(
     value: str | int,
     subtitle: str,
-    value_color: str = COLORS["gray_900"],
-    subtitle_color: str = COLORS["gray_500"],
+    value_color: str | None = None,
+    subtitle_color: str | None = None,
 ) -> rx.Component:
     """Value with subtitle for more complex metrics"""
     return rx.vstack(
@@ -139,13 +148,14 @@ def metric_value_with_subtitle(
             value,
             size="9",
             weight="bold",
-            color=value_color,
-            class_name="tabular-nums",
+            class_name="tabular-nums text-5xl font-bold text-slate-900 dark:text-slate-100",
+            style={"color": value_color} if value_color else None,
         ),
         rx.text(
             subtitle,
             size="2",
-            color=subtitle_color,
+            class_name="text-sm text-slate-500 dark:text-slate-300",
+            style={"color": subtitle_color} if subtitle_color else None,
         ),
         spacing="0",
         align="start",

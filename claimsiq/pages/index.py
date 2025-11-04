@@ -19,7 +19,15 @@ from claimsiq.theme import DARK_COLORS, DARK_GRADIENTS, DARK_SHADOWS
 from claimsiq.components.cards_v2 import clickable_metric_card, metric_value_large, metric_value_with_subtitle
 from claimsiq.components.navbar import navbar
 from claimsiq.components.tables_dark import dark_claims_table
-from claimsiq.components.charts import claims_trend_chart, risk_distribution_chart, status_breakdown_chart
+from claimsiq.components.charts import (
+    claims_trend_chart,
+    risk_distribution_chart,
+    status_breakdown_chart,
+    processing_time_trend_chart,
+    provider_leaderboard_chart,
+    denial_reason_chart,
+    high_risk_heatmap_chart,
+)
 from claimsiq.components.modals_dark import claim_detail_modal_dark
 from claimsiq.components.notifications import notification_toast
 from claimsiq.components.pagination import enhanced_pagination
@@ -86,7 +94,7 @@ def dark_action_bar() -> rx.Component:
                             rx.text("Sample Data", size="2", weight="medium"),
                             spacing="2",
                         ),
-                        on_click=lambda: ClaimsState.generate_sample_data(1000),
+                        on_click=ClaimsState.generate_sample_data(1000),
                         loading=ClaimsState.is_loading_data,
                         disabled=ClaimsState.is_loading_data,
                         style={
@@ -272,7 +280,7 @@ def dark_summary_cards() -> rx.Component:
                     spacing="0",
                     width="100%",
                 ),
-                on_click=lambda: ClaimsState.drill_into_status("all"),
+                on_click=ClaimsState.drill_into_status("all"),
                 style={
                     "background": DARK_GRADIENTS["card"],
                     "border-radius": "16px",
@@ -326,7 +334,7 @@ def dark_summary_cards() -> rx.Component:
                     spacing="0",
                     width="100%",
                 ),
-                on_click=lambda: ClaimsState.drill_into_status("approved"),
+                on_click=ClaimsState.drill_into_status("approved"),
                 style={
                     "background": DARK_GRADIENTS["card"],
                     "border-radius": "16px",
@@ -375,7 +383,7 @@ def dark_summary_cards() -> rx.Component:
                     spacing="0",
                     width="100%",
                 ),
-                on_click=lambda: ClaimsState.drill_into_status("pending"),
+                on_click=ClaimsState.drill_into_status("pending"),
                 style={
                     "background": DARK_GRADIENTS["card"],
                     "border-radius": "16px",
@@ -424,7 +432,7 @@ def dark_summary_cards() -> rx.Component:
                     spacing="0",
                     width="100%",
                 ),
-                on_click=lambda: ClaimsState.drill_into_status("flagged"),
+                on_click=ClaimsState.drill_into_status("flagged"),
                 style={
                     "background": DARK_GRADIENTS["card"],
                     "border-radius": "16px",
@@ -521,12 +529,16 @@ def index() -> rx.Component:
                         ),
                         rx.grid(
                             claims_trend_chart(),
+                            processing_time_trend_chart(),
                             rx.vstack(
                                 risk_distribution_chart(),
                                 status_breakdown_chart(),
-                                spacing="5",
+                                spacing="6",
                                 width="100%",
                             ),
+                            provider_leaderboard_chart(),
+                            denial_reason_chart(),
+                            high_risk_heatmap_chart(),
                             columns="2",
                             spacing="6",
                             width="100%",
@@ -577,7 +589,7 @@ def index() -> rx.Component:
                                             ),
                                             spacing="2",
                                         ),
-                                        on_click=lambda: ClaimsState.set_status_filter("all"),
+                                        on_click=ClaimsState.set_status_filter("all"),
                                         variant=rx.cond(
                                             ClaimsState.selected_status == "all",
                                             "solid",
@@ -602,7 +614,7 @@ def index() -> rx.Component:
                                             ),
                                             spacing="2",
                                         ),
-                                        on_click=lambda: ClaimsState.set_status_filter("approved"),
+                                        on_click=ClaimsState.set_status_filter("approved"),
                                         variant=rx.cond(
                                             ClaimsState.selected_status == "approved",
                                             "solid",
@@ -627,7 +639,7 @@ def index() -> rx.Component:
                                             ),
                                             spacing="2",
                                         ),
-                                        on_click=lambda: ClaimsState.set_status_filter("pending"),
+                                        on_click=ClaimsState.set_status_filter("pending"),
                                         variant=rx.cond(
                                             ClaimsState.selected_status == "pending",
                                             "solid",
@@ -652,7 +664,7 @@ def index() -> rx.Component:
                                             ),
                                             spacing="2",
                                         ),
-                                        on_click=lambda: ClaimsState.set_status_filter("flagged"),
+                                        on_click=ClaimsState.set_status_filter("flagged"),
                                         variant=rx.cond(
                                             ClaimsState.selected_status == "flagged",
                                             "solid",
@@ -689,7 +701,7 @@ def index() -> rx.Component:
                                             rx.text("Low", size="2"),
                                             spacing="2",
                                         ),
-                                        on_click=lambda: ClaimsState.toggle_risk("low"),
+                                        on_click=ClaimsState.toggle_risk("low"),
                                         variant=rx.cond(ClaimsState.risk_low_active, "solid", "outline"),
                                         color_scheme="green",
                                         size="2",
@@ -704,7 +716,7 @@ def index() -> rx.Component:
                                             rx.text("Medium", size="2"),
                                             spacing="2",
                                         ),
-                                        on_click=lambda: ClaimsState.toggle_risk("medium"),
+                                        on_click=ClaimsState.toggle_risk("medium"),
                                         variant=rx.cond(ClaimsState.risk_medium_active, "solid", "outline"),
                                         color_scheme="orange",
                                         size="2",
@@ -719,7 +731,7 @@ def index() -> rx.Component:
                                             rx.text("High", size="2"),
                                             spacing="2",
                                         ),
-                                        on_click=lambda: ClaimsState.toggle_risk("high"),
+                                        on_click=ClaimsState.toggle_risk("high"),
                                         variant=rx.cond(ClaimsState.risk_high_active, "solid", "outline"),
                                         color_scheme="red",
                                         size="2",

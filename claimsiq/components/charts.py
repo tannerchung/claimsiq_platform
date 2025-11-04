@@ -1,7 +1,19 @@
 import reflex as rx
 import plotly.graph_objects as go
-from claimsiq.theme import COLORS
 from typing import List, Dict
+
+from claimsiq.theme import COLORS
+
+CARD_CLASS = (
+    "bg-white/90 dark:bg-slate-800/95 border border-slate-200/70 dark:border-slate-700/60 "
+    "rounded-2xl shadow-md backdrop-blur w-full"
+)
+TITLE_CLASS = "text-lg font-semibold tracking-tight text-gray-900 dark:text-slate-100"
+CAPTION_CLASS = "text-sm text-gray-500 dark:text-slate-300"
+BADGE_CLASS = (
+    "bg-slate-100/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-medium text-xs "
+    "px-2.5 py-1 rounded-lg"
+)
 
 def claims_trend_chart(data: List[Dict] = None) -> rx.Component:
     """Area chart showing claims over time"""
@@ -59,26 +71,29 @@ def claims_trend_chart(data: List[Dict] = None) -> rx.Component:
     return rx.box(
         rx.vstack(
             rx.hstack(
-                rx.heading("Claims Trend", size="5", color=COLORS["gray_900"]),
+                rx.heading("Claims Trend", size="5", class_name=TITLE_CLASS),
                 rx.spacer(),
-                rx.badge("Last 6 months", color_scheme="blue", variant="soft"),
+                rx.badge("Last 6 months", class_name=BADGE_CLASS),
                 width="100%",
                 align="center",
                 class_name="flex items-center justify-between w-full",
                 margin_bottom="4",
             ),
-            rx.plotly(data=fig, aria_label="Line chart showing claim volume trend over time"),
+            rx.plotly(
+                data=fig,
+                aria_label="Line chart showing claim volume trend over time",
+            ),
             rx.text(
                 f"{delta_prefix} {delta_text} between {data[0]['date']} and {data[-1]['date']}. Hover to see monthly counts.",
                 size="1",
-                color=COLORS["gray_500"],
+                class_name=CAPTION_CLASS,
                 margin_top="3",
             ),
-            spacing="0",
+            spacing="4",
             width="100%",
         ),
         padding="6",
-        class_name="bg-white rounded-xl shadow-md w-full",
+        class_name=CARD_CLASS,
     )
 
 
@@ -129,32 +144,29 @@ def risk_distribution_chart(data: Dict = None) -> rx.Component:
     return rx.box(
         rx.vstack(
             rx.hstack(
-                rx.heading("Risk Distribution", size="5", color=COLORS["gray_900"]),
+                rx.heading("Risk Distribution", size="5", class_name=TITLE_CLASS),
                 rx.spacer(),
-                rx.text(
-                    f"{sum(values)} total",
-                    size="2",
-                    color=COLORS["gray_500"],
-                    weight="medium",
-                    class_name="text-gray-500 font-medium",
-                ),
+                rx.badge(f"{sum(values)} total", class_name=BADGE_CLASS),
                 width="100%",
                 align="center",
                 class_name="flex items-center justify-between w-full",
                 margin_bottom="4",
             ),
-            rx.plotly(data=fig, aria_label="Donut chart showing risk distribution of claims"),
+            rx.plotly(
+                data=fig,
+                aria_label="Donut chart showing risk distribution of claims",
+            ),
             rx.text(
                 f"{dominant_label} represents the largest share. Use risk filters to drill into specific segments.",
                 size="1",
-                color=COLORS["gray_500"],
+                class_name=CAPTION_CLASS,
                 margin_top="3",
             ),
-            spacing="0",
+            spacing="4",
             width="100%",
         ),
         padding="6",
-        class_name="bg-white rounded-xl shadow-md w-full",
+        class_name=CARD_CLASS,
     )
 
 
@@ -218,28 +230,287 @@ def status_breakdown_chart(data: Dict = None) -> rx.Component:
     return rx.box(
         rx.vstack(
             rx.hstack(
-                rx.heading("Status Breakdown", size="5", color=COLORS["gray_900"]),
+                rx.heading("Status Breakdown", size="5", class_name=TITLE_CLASS),
                 rx.spacer(),
-                rx.badge(
-                    f"{sum(values)} total",
-                    color_scheme="gray",
-                    variant="soft",
-                ),
+                rx.badge(f"{sum(values)} total", class_name=BADGE_CLASS),
                 width="100%",
                 align="center",
                 class_name="flex items-center justify-between w-full",
                 margin_bottom="4",
             ),
-            rx.plotly(data=fig, aria_label="Bar chart showing counts by claim status"),
+            rx.plotly(
+                data=fig,
+                aria_label="Bar chart showing counts by claim status",
+            ),
             rx.text(
                 f"{top_status} leads this period. Compare bars to spot bottlenecks or review flagged claims.",
                 size="1",
-                color=COLORS["gray_500"],
+                class_name=CAPTION_CLASS,
                 margin_top="3",
             ),
-            spacing="0",
+            spacing="4",
             width="100%",
         ),
         padding="6",
-        class_name="bg-white rounded-xl shadow-md w-full",
+        class_name=CARD_CLASS,
+    )
+
+
+def processing_time_trend_chart(data: List[Dict] = None) -> rx.Component:
+    """Line chart showing average processing time."""
+
+    if not data:
+        data = [
+            {"date": "Jan", "days": 4.2},
+            {"date": "Feb", "days": 5.1},
+            {"date": "Mar", "days": 4.8},
+            {"date": "Apr", "days": 6.0},
+            {"date": "May", "days": 3.9},
+            {"date": "Jun", "days": 4.5},
+        ]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=[d["date"] for d in data],
+        y=[d["days"] for d in data],
+        mode="lines+markers",
+        line=dict(color=COLORS["warning"], width=3),
+        marker=dict(size=8, color=COLORS["warning"]),
+        name="Avg days",
+        hovertemplate="<b>%{x}</b><br>Avg days: %{y:.1f}<extra></extra>",
+    ))
+
+    fig.update_layout(
+        title=None,
+        xaxis_title="Month",
+        yaxis_title="Avg days to process",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", size=12, color=COLORS["gray_700"]),
+        margin=dict(l=40, r=20, t=20, b=40),
+        height=300,
+    )
+
+    best_month = min(data, key=lambda d: d["days"])
+    worst_month = max(data, key=lambda d: d["days"])
+
+    return rx.box(
+        rx.vstack(
+            rx.hstack(
+                rx.heading("Processing Time", size="5", class_name=TITLE_CLASS),
+                rx.spacer(),
+                rx.badge("Avg days", class_name=BADGE_CLASS),
+                width="100%",
+                align="center",
+                class_name="flex items-center justify-between w-full",
+                margin_bottom="4",
+            ),
+            rx.plotly(
+                data=fig,
+                aria_label="Line chart showing average processing time per month",
+            ),
+            rx.text(
+                f"Fastest in {best_month['date']} ({best_month['days']:.1f} days). Longest in {worst_month['date']}.",
+                size="1",
+                class_name=CAPTION_CLASS,
+                margin_top="3",
+            ),
+            spacing="4",
+            width="100%",
+        ),
+        padding="6",
+        class_name=CARD_CLASS,
+    )
+
+
+def provider_leaderboard_chart(data: List[Dict] = None) -> rx.Component:
+    """Horizontal bar chart showing top provider approval rates."""
+
+    if not data:
+        data = [
+            {"provider": "Starlight Medical", "rate": 0.94},
+            {"provider": "Metro Health", "rate": 0.88},
+            {"provider": "Evergreen Clinic", "rate": 0.82},
+            {"provider": "Summit Care", "rate": 0.79},
+        ]
+
+    labels = [d["provider"] for d in data]
+    values = [round(d["rate"] * 100, 1) for d in data]
+
+    fig = go.Figure(data=[go.Bar(
+        x=values,
+        y=labels,
+        orientation="h",
+        marker=dict(color=COLORS["primary"]),
+        text=[f"{v}%" for v in values],
+        textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Approval rate: %{x:.1f}%<extra></extra>",
+    )])
+
+    fig.update_layout(
+        title=None,
+        xaxis_title="Approval rate (%)",
+        yaxis_title="",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", size=12, color=COLORS["gray_700"]),
+        margin=dict(l=20, r=40, t=20, b=40),
+        height=300,
+    )
+
+    return rx.box(
+        rx.vstack(
+            rx.hstack(
+                rx.heading("Top Providers", size="5", class_name=TITLE_CLASS),
+                rx.spacer(),
+                rx.badge("Approval rate", class_name=BADGE_CLASS),
+                width="100%",
+                align="center",
+                class_name="flex items-center justify-between w-full",
+                margin_bottom="4",
+            ),
+            rx.plotly(
+                data=fig,
+                aria_label="Horizontal bar chart showing top provider approval rates",
+            ),
+            rx.text(
+                "Track which partners deliver consistent approvals and spot anomalies quickly.",
+                size="1",
+                class_name=CAPTION_CLASS,
+                margin_top="3",
+            ),
+            spacing="4",
+            width="100%",
+        ),
+        padding="6",
+        class_name=CARD_CLASS,
+    )
+
+
+def denial_reason_chart(data: Dict = None) -> rx.Component:
+    """Bar chart of denial reasons."""
+
+    if not data:
+        data = {
+            "Documentation": 32,
+            "Eligibility": 21,
+            "Coding": 18,
+            "Duplicate": 12,
+            "Other": 9,
+        }
+
+    reasons = list(data.keys())
+    values = list(data.values())
+
+    fig = go.Figure(data=[go.Bar(
+        x=reasons,
+        y=values,
+        marker=dict(color=COLORS["danger"]),
+        text=values,
+        textposition="auto",
+        hovertemplate="<b>%{x}</b><br>Denials: %{y}<extra></extra>",
+    )])
+
+    fig.update_layout(
+        title=None,
+        xaxis_title="Reason",
+        yaxis_title="Count",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", size=12, color=COLORS["gray_700"]),
+        margin=dict(l=40, r=20, t=20, b=40),
+        height=300,
+    )
+
+    return rx.box(
+        rx.vstack(
+            rx.hstack(
+                rx.heading("Denial Reasons", size="5", class_name=TITLE_CLASS),
+                rx.spacer(),
+                rx.badge("Last 90 days", class_name=BADGE_CLASS),
+                width="100%",
+                align="center",
+                class_name="flex items-center justify-between w-full",
+                margin_bottom="4",
+            ),
+            rx.plotly(
+                data=fig,
+                aria_label="Bar chart showing denial reasons",
+            ),
+            rx.text(
+                "Focus recovery efforts where denial counts are highest to improve cash flow.",
+                size="1",
+                class_name=CAPTION_CLASS,
+                margin_top="3",
+            ),
+            spacing="4",
+            width="100%",
+        ),
+        padding="6",
+        class_name=CARD_CLASS,
+    )
+
+
+def high_risk_heatmap_chart(data: Dict = None) -> rx.Component:
+    """Heatmap showing high-risk intersections."""
+
+    if not data:
+        diagnoses = ["E11.9", "I10", "J44.9", "M54.5"]
+        procedures = ["99213", "93000", "71046", "80053"]
+        matrix = [
+            [3, 2, 1, 0],
+            [1, 4, 2, 0],
+            [0, 1, 5, 2],
+            [2, 2, 3, 1],
+        ]
+    else:
+        diagnoses = data.get("diagnoses", [])
+        procedures = data.get("procedures", [])
+        matrix = data.get("matrix", [])
+
+    fig = go.Figure(data=go.Heatmap(
+        z=matrix,
+        x=procedures,
+        y=diagnoses,
+        colorscale="Reds",
+        hovertemplate="Diagnosis: %{y}<br>Procedure: %{x}<br>High-risk count: %{z}<extra></extra>",
+    ))
+
+    fig.update_layout(
+        title=None,
+        xaxis_title="Procedure",
+        yaxis_title="Diagnosis",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", size=12, color=COLORS["gray_700"]),
+        margin=dict(l=60, r=20, t=20, b=60),
+        height=300,
+    )
+
+    return rx.box(
+        rx.vstack(
+            rx.hstack(
+                rx.heading("Risk Hotspots", size="5", class_name=TITLE_CLASS),
+                rx.spacer(),
+                rx.badge("High-risk combos", class_name=BADGE_CLASS),
+                width="100%",
+                align="center",
+                class_name="flex items-center justify-between w-full",
+                margin_bottom="4",
+            ),
+            rx.plotly(
+                data=fig,
+                aria_label="Heatmap showing high-risk diagnosis/procedure combinations",
+            ),
+            rx.text(
+                "Target audits on the darkest cells—those diagnosis/procedure pairs generate the most risk alerts.",
+                size="1",
+                class_name=CAPTION_CLASS,
+                margin_top="3",
+            ),
+            spacing="4",
+            width="100%",
+        ),
+        padding="6",
+        class_name=CARD_CLASS,
     )

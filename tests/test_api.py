@@ -58,8 +58,19 @@ def test_update_claim_status_endpoint(client: TestClient):
     payload = response.json()
     assert payload["success"] is True
     assert payload["claim"]["status"] == "denied"
-    assert "quick_stats" in payload
+    assert payload["claim"]["denial_reason"] == "Documentation missing"
+    quick_stats = payload["quick_stats"]
+    assert quick_stats["provider_summary"]
+    assert quick_stats["days_pending_label"]
 
+
+def test_update_claim_status_not_found(client: TestClient):
+    response = client.put(
+        "/api/claims/UNKNOWN/status",
+        json={"status": "approved"},
+    )
+
+    assert response.status_code == 404
 
 def test_update_claim_notes_endpoint(client: TestClient):
     response = client.put(

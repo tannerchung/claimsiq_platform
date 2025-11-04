@@ -13,7 +13,7 @@ def data_management_panel() -> rx.Component:
     """Primary data management panel used on the dashboard."""
     header = rx.hstack(
         rx.icon("database", size=20, color=COLORS["primary"]),
-        rx.heading("Data Management", size="4", color=COLORS["gray_900"]),
+        rx.heading("Data Management", size="4", class_name="text-lg font-semibold text-slate-800 dark:text-slate-100"),
         spacing="2",
         align="center",
     )
@@ -21,13 +21,13 @@ def data_management_panel() -> rx.Component:
     description = rx.text(
         "Load real insurance data from Kaggle or generate synthetic records for demos.",
         size="2",
-        color=COLORS["gray_600"],
+        class_name="text-sm text-slate-500 dark:text-slate-300",
     )
 
     actions = rx.vstack(
         rx.button(
             rx.hstack(
-                rx.icon("cloud_download", size=16),
+                rx.icon("cloud-download", size=16),
                 rx.text("Load Kaggle Data"),
                 spacing="2",
             ),
@@ -40,11 +40,11 @@ def data_management_panel() -> rx.Component:
         ),
         rx.button(
             rx.hstack(
-                rx.icon("sparkle", size=16),
+                rx.icon("sparkles", size=16),
                 rx.text("Generate Sample Data"),
                 spacing="2",
             ),
-            on_click=lambda: ClaimsState.generate_sample_data(1000),
+            on_click=ClaimsState.generate_sample_data(1000),
             loading=ClaimsState.is_loading_data,
             disabled=ClaimsState.is_loading_data,
             color_scheme="green",
@@ -54,7 +54,7 @@ def data_management_panel() -> rx.Component:
         ),
         rx.button(
             rx.hstack(
-                rx.icon("trash_2", size=16),
+                rx.icon("trash-2", size=16),
                 rx.text("Clear All Data"),
                 spacing="2",
             ),
@@ -74,13 +74,13 @@ def data_management_panel() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.icon("info", size=14, color=COLORS["primary"]),
-                rx.text("Kaggle dataset requires API token (see KAGGLE_SETUP.md).", size="1", color=COLORS["gray_600"]),
+                rx.text("Kaggle dataset requires API token (see KAGGLE_SETUP.md).", size="1", class_name="text-xs text-slate-500 dark:text-slate-300"),
                 spacing="2",
                 align="center",
             ),
             rx.hstack(
                 rx.icon("info", size=14, color=COLORS["success"]),
-                rx.text("Sample data generates 1,000 demo-friendly claims.", size="1", color=COLORS["gray_600"]),
+                rx.text("Sample data generates 1,000 demo-friendly claims.", size="1", class_name="text-xs text-slate-500 dark:text-slate-300"),
                 spacing="2",
                 align="center",
             ),
@@ -88,9 +88,7 @@ def data_management_panel() -> rx.Component:
             align="start",
         ),
         padding="3",
-        background=COLORS["gray_50"],
-        border_radius="0.5rem",
-        border=f"1px solid {COLORS['gray_200']}",
+        class_name="bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl",
         width="100%",
     )
 
@@ -118,10 +116,10 @@ def data_management_panel() -> rx.Component:
         width="100%",
     )
 
-    return rx.vstack(
+    return rx.box(
         rx.cond(ClaimsState.data_ops_enabled, enabled_body, disabled_body),
-        spacing="4",
-        width="100%",
+        padding="6",
+        class_name="w-full bg-white/90 dark:bg-slate-800/95 border border-slate-200/70 dark:border-slate-700/60 rounded-2xl shadow-md backdrop-blur",
     )
 
 
@@ -132,7 +130,7 @@ def compact_data_buttons() -> rx.Component:
         rx.hstack(
             rx.button(
                 rx.hstack(
-                    rx.icon("cloud_download", size=16),
+                    rx.icon("cloud-download", size=16),
                     rx.text("Kaggle", size="2"),
                     spacing="1",
                 ),
@@ -145,11 +143,11 @@ def compact_data_buttons() -> rx.Component:
             ),
             rx.button(
                 rx.hstack(
-                    rx.icon("sparkle", size=16),
+                    rx.icon("sparkles", size=16),
                     rx.text("Sample", size="2"),
                     spacing="1",
                 ),
-                on_click=lambda: ClaimsState.generate_sample_data(1000),
+                on_click=ClaimsState.generate_sample_data(1000),
                 loading=ClaimsState.is_loading_data,
                 disabled=ClaimsState.is_loading_data,
                 color_scheme="green",

@@ -266,7 +266,7 @@ def claims_table() -> rx.Component:
                                         "id",
                                         ClaimsState.sort_column,
                                         ClaimsState.sort_direction,
-                                        lambda: ClaimsState.sort_by("id"),
+                                        ClaimsState.sort_by("id"),
                                         class_name="sticky left-0 z-20 bg-white/95 backdrop-blur",
                                     ),
                                     rx.table.column_header_cell(
@@ -278,14 +278,14 @@ def claims_table() -> rx.Component:
                                         "claim_date",
                                         ClaimsState.sort_column,
                                         ClaimsState.sort_direction,
-                                        lambda: ClaimsState.sort_by("claim_date"),
+                                        ClaimsState.sort_by("claim_date"),
                                     ),
                                     sortable_header(
                                         "Amount",
                                         "claim_amount",
                                         ClaimsState.sort_column,
                                         ClaimsState.sort_direction,
-                                        lambda: ClaimsState.sort_by("claim_amount"),
+                                        ClaimsState.sort_by("claim_amount"),
                                     ),
                                     rx.table.column_header_cell("Status"),
                                     sortable_header(
@@ -293,7 +293,7 @@ def claims_table() -> rx.Component:
                                         "risk_score",
                                         ClaimsState.sort_column,
                                         ClaimsState.sort_direction,
-                                        lambda: ClaimsState.sort_by("risk_score"),
+                                        ClaimsState.sort_by("risk_score"),
                                     ),
                                 )
                             ),

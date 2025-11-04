@@ -128,7 +128,7 @@ def quick_actions_panel() -> rx.Component:
                         rx.text("Generate Sample Data", size="2"),
                         spacing="2",
                     ),
-                    on_click=lambda: ClaimsState.generate_sample_data(1000),
+                    on_click=ClaimsState.generate_sample_data(1000),
                     variant="outline",
                     width="100%",
                     justify="start",

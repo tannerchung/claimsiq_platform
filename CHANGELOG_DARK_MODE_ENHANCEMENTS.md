@@ -407,3 +407,24 @@ def claim_detail_modal_dark() -> rx.Component:
 **Version:** 2.1 (Dark Mode Enhancements)
 **Last Updated:** 2025-11-04
 **Status:** ✅ Complete and Production Ready
+
+---
+
+## 3. Analytics Grid & Review Workflow (2025-11-05)
+
+### Highlights
+- **Six-card analytics grid** anchored to the dark theme: added processing time trend, provider leaderboard, denial reasons, and risk heatmap so the layout fills evenly without empty gaps.
+- **Unified chart styling** via shared utilities (`CARD_CLASS`, `TITLE_CLASS`, etc.) for consistent typography, badges, and background contrast across light/dark themes.
+- **Modal workflow improvements**:
+  - Quick stats pill bar (provider history, similar claims, processing status).
+  - Persisted processor notes with explicit save button + loading feedback.
+  - Action note textarea wired to backend for deny/flag calls, using the new `ClaimsState.modal_action_reason`.
+  - Buttons now respect processing state (loading/disabled) and reuse shared state methods without lambda wrappers.
+
+### Touchpoints
+- `claimsiq/components/charts.py`
+- `claimsiq/pages/index.py` (analytics grid spacing + ordering)
+- `claimsiq/components/modals_dark.py`, `claimsiq/components/modals_v2.py`
+- `claimsiq/components/cards_v2.py`, `filters_v2.py`, `tables_dark.py`, `tables_enhanced.py`
+- `claimsiq/state.py` (action reason + API wiring)
+

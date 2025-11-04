@@ -6,7 +6,7 @@ from claimsiq.config import API_URL, DATA_OPERATIONS_ENABLED
 
 
 DEFAULT_MODAL_CLAIM = {
-    "id": "",
+    "id": "—",
     "claim_amount": 0.0,
     "claim_amount_formatted": "$0.00",
     "claim_date": "—",
@@ -79,6 +79,7 @@ class ClaimsState(rx.State):
     modal_claim: Dict = DEFAULT_MODAL_CLAIM.copy()
     modal_quick_stats: Dict = DEFAULT_QUICK_STATS.copy()
     modal_notes: str = ""
+    modal_action_reason: str = ""
 
     # Theme
     dark_mode: bool = False
@@ -337,27 +338,24 @@ class ClaimsState(rx.State):
         """Open claim modal. Accepts either an event dict or a claim ID string."""
         claim_id = ""
 
-        # Debug: print the type and keys if it's a dict
         if isinstance(event_or_id, dict):
-            print(f"[DEBUG] Event is dict with keys: {list(event_or_id.keys())}")
-            # Try different possible keys for the target element
-            for possible_key in ['current_target', 'currentTarget', 'target', 'srcElement']:
+            for possible_key in ["current_target", "currentTarget", "target", "srcElement", "detail"]:
                 if possible_key in event_or_id:
                     target = event_or_id[possible_key]
-                    if isinstance(target, dict) and 'id' in target:
-                        claim_id = target['id']
-                        print(f"[DEBUG] Found claim_id in event['{possible_key}']['id']: {claim_id}")
+                    if isinstance(target, dict) and "id" in target:
+                        claim_id = target["id"]
                         break
-
-            # If still no claim_id, check if there's an 'id' key directly
-            if not claim_id and 'id' in event_or_id:
-                claim_id = event_or_id['id']
-                print(f"[DEBUG] Found claim_id in event['id']: {claim_id}")
+            if not claim_id:
+                claim_id = str(event_or_id.get("id", "")).strip()
         else:
-            claim_id = str(event_or_id)
-            print(f"[DEBUG] Using claim_id directly: {claim_id}")
+            claim_id = str(event_or_id).strip()
+
+        if not claim_id:
+            self.show_toast("Unable to identify the selected claim.", "error")
+            return
 
         self.selected_claim_id = claim_id
+        self.modal_action_reason = ""
         self._sync_modal_claim()
         self.show_claim_modal = True
 
@@ -367,6 +365,7 @@ class ClaimsState(rx.State):
         self.modal_claim = self._default_modal_claim()
         self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
         self.modal_notes = ""
+        self.modal_action_reason = ""
 
     def set_show_claim_modal(self, value: bool):
         """Explicit setter to avoid relying on auto-generated setters."""
@@ -376,6 +375,7 @@ class ClaimsState(rx.State):
             self.modal_claim = self._default_modal_claim()
             self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
             self.modal_notes = ""
+            self.modal_action_reason = ""
 
     @rx.var
     def selected_claim(self) -> Dict:
@@ -391,6 +391,7 @@ class ClaimsState(rx.State):
             self.modal_claim = self._default_modal_claim()
             self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
             self.modal_notes = ""
+            self.modal_action_reason = ""
             return
 
         selected = next(
@@ -406,11 +407,13 @@ class ClaimsState(rx.State):
             self.modal_claim = self._default_modal_claim()
             self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
             self.modal_notes = ""
+            self.modal_action_reason = ""
         else:
             hydrated = {**self._default_modal_claim(), **selected}
             self.modal_claim = hydrated
             self.modal_notes = hydrated.get("processor_notes", "")
             self.modal_quick_stats = self._compute_quick_stats(hydrated)
+            self.modal_action_reason = ""
 
     @rx.var
     def has_modal_claim(self) -> bool:
@@ -796,23 +799,28 @@ class ClaimsState(rx.State):
             toast_type="success",
         )
 
-    async def deny_claim(self, claim_id: str, reason: str = ""):
+    async def deny_claim(self, claim_id: str):
+        reason = (self.modal_action_reason or "").strip()
         await self._update_claim_status(
             claim_id,
-            payload={"status": "denied", "reason": reason},
+            payload={"status": "denied", "reason": reason or None},
             success_message=f"✗ Claim {claim_id} denied",
             toast_type="success",
         )
 
-    async def flag_claim(self, claim_id: str, note: str = ""):
+    async def flag_claim(self, claim_id: str):
+        note = (self.modal_action_reason or "").strip()
         await self._update_claim_status(
             claim_id,
-            payload={"status": "flagged", "reason": note},
+            payload={"status": "flagged", "reason": note or None},
             success_message=f"⚠ Claim {claim_id} flagged for review",
             toast_type="warning",
         )
 
     async def _update_claim_status(self, claim_id: str, payload: Dict, success_message: str, toast_type: str):
+        if not claim_id:
+            self.show_toast("Select a claim before performing actions.", "warning")
+            return
         if self.is_processing_claim:
             return
         self.is_processing_claim = True
@@ -827,6 +835,9 @@ class ClaimsState(rx.State):
                 body = response.json()
                 claim = body.get("claim", {})
                 self._patch_claim_in_list(claim)
+                quick_stats = body.get("quick_stats")
+                if quick_stats:
+                    self.modal_quick_stats = quick_stats
                 self.show_toast(success_message, toast_type)
                 self.close_claim_modal()
                 await self.load_summary()
@@ -840,9 +851,13 @@ class ClaimsState(rx.State):
             self.show_toast(f"Error updating claim: {exc}", "error")
         finally:
             self.is_processing_claim = False
+            self.modal_action_reason = ""
 
     def set_modal_notes(self, value: str):
         self.modal_notes = value
+
+    def set_modal_action_reason(self, value: str):
+        self.modal_action_reason = value
 
     async def save_modal_notes(self):
         if not self.selected_claim_id:

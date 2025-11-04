@@ -272,7 +272,7 @@ def dark_claim_row(claim: dict) -> rx.Component:
         rx.table.cell(
             rx.icon_button(
                 rx.icon("eye", size=18),
-                on_click=lambda: ClaimsState.open_claim_modal(claim["id"]),
+                on_click=ClaimsState.open_claim_modal(claim["id"]),
                 size="2",
                 variant="ghost",
                 style={
@@ -287,7 +287,7 @@ def dark_claim_row(claim: dict) -> rx.Component:
             },
         ),
 
-        on_click=lambda: ClaimsState.open_claim_modal(claim["id"]),
+        on_click=ClaimsState.open_claim_modal(claim["id"]),
         style={
             "cursor": "pointer",
             "transition": "all 0.2s ease",
@@ -341,35 +341,35 @@ def dark_claims_table() -> rx.Component:
                         "provider_id",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("provider_id"),
+                        ClaimsState.sort_by("provider_id"),
                     ),
                     sortable_header_dark(
                         "DATE",
                         "claim_date",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("claim_date"),
+                        ClaimsState.sort_by("claim_date"),
                     ),
                     sortable_header_dark(
                         "AMOUNT",
                         "claim_amount",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("claim_amount"),
+                        ClaimsState.sort_by("claim_amount"),
                     ),
                     sortable_header_dark(
                         "STATUS",
                         "status",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("status"),
+                        ClaimsState.sort_by("status"),
                     ),
                     sortable_header_dark(
                         "RISK",
                         "risk_score",
                         ClaimsState.sort_column,
                         ClaimsState.sort_direction,
-                        lambda: ClaimsState.sort_by("risk_score"),
+                        ClaimsState.sort_by("risk_score"),
                     ),
                     rx.table.column_header_cell(
                         rx.text(

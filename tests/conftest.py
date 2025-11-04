@@ -4,10 +4,8 @@ import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-try:
-    import pandas as pd
-except ModuleNotFoundError:
-    pd = None
+pytest.importorskip("pandas")
+import pandas as pd
 from fastapi.testclient import TestClient
 
 from backend import app as api_app
@@ -17,8 +15,6 @@ from backend.services.data_service import DataService
 @pytest.fixture
 def sample_claims_df():
     """Sample claims dataframe used across tests."""
-    if pd is None:
-        pytest.skip("pandas is required for backend tests")
     base_rows = [
         {
             "id": "CLM-001",
@@ -64,8 +60,6 @@ def sample_claims_df():
 @pytest.fixture
 def sample_providers_df():
     """Sample providers dataframe used across tests."""
-    if pd is None:
-        pytest.skip("pandas is required for backend tests")
     return pd.DataFrame(
         [
             {"id": "PROV-1", "name": "Provider Alpha"},
