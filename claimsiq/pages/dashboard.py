@@ -3,6 +3,7 @@ from claimsiq.state import ClaimsState
 from claimsiq.components.cards import metric_card
 from claimsiq.components.navbar import navbar
 from claimsiq.components.tables import claims_table
+from claimsiq.components.charts import claims_trend_chart, risk_distribution_chart, status_breakdown_chart
 from claimsiq.theme import COLORS, SPACING
 
 def dashboard() -> rx.Component:
@@ -79,7 +80,31 @@ def dashboard() -> rx.Component:
                         spacing="4",
                         width="100%",
                     ),
+
+                    # Analytics Charts Section
+                    rx.heading(
+                        "Analytics",
+                        size="6",
+                        color=COLORS["gray_900"],
+                        margin_top="4",
+                    ),
+                    rx.grid(
+                        claims_trend_chart(),
+                        rx.grid(
+                            risk_distribution_chart(),
+                            status_breakdown_chart(),
+                            columns="1",
+                            spacing="4",
+                            width="100%",
+                        ),
+                        columns="2",
+                        spacing="4",
+                        width="100%",
+                    ),
+
+                    # Claims Table Section
                     claims_table(),
+
                     spacing="6",
                     width="100%",
                 ),
