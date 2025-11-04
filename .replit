@@ -41,3 +41,7 @@ externalPort = 3001
 [[ports]]
 localPort = 44815
 externalPort = 3000
+
+[deployment]
+deploymentTarget = "vm"
+run = ["reflex", "run", "--env", "prod", "--frontend-port", "5000", "--backend-port", "8001", "--loglevel", "warning"]
