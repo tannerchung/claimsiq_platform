@@ -2,7 +2,38 @@ import reflex as rx
 import httpx
 from typing import List, Dict
 from datetime import datetime, timezone
-from claimsiq.config import API_URL
+from claimsiq.config import API_URL, DATA_OPERATIONS_ENABLED
+
+
+DEFAULT_MODAL_CLAIM = {
+    "id": "",
+    "claim_amount": 0.0,
+    "claim_amount_formatted": "$0.00",
+    "claim_date": "—",
+    "status": "unknown",
+    "provider_name": "Unknown",
+    "provider_id": "Unknown",
+    "patient_id": "—",
+    "procedure_code": "—",
+    "procedure_codes": "—",
+    "diagnosis_code": "—",
+    "risk_score": 0.0,
+    "ui_risk_level": "low",
+    "ui_risk_reason": "",
+    "ui_has_reason": False,
+    "days_pending": 0,
+    "approved_amount": 0.0,
+    "approved_amount_formatted": "—",
+    "processor_notes": "",
+    "denial_reason": None,
+    "processed_date": None,
+}
+
+DEFAULT_QUICK_STATS = {
+    "provider_summary": "No provider history available.",
+    "similar_summary": "No similar claims found.",
+    "days_pending_label": "0 days pending",
+}
 
 class ClaimsState(rx.State):
     claims_data: List[Dict] = []
@@ -45,9 +76,16 @@ class ClaimsState(rx.State):
     # Modal state
     selected_claim_id: str = ""
     show_claim_modal: bool = False
+    modal_claim: Dict = DEFAULT_MODAL_CLAIM.copy()
+    modal_quick_stats: Dict = DEFAULT_QUICK_STATS.copy()
+    modal_notes: str = ""
 
     # Theme
     dark_mode: bool = False
+
+    is_processing_claim: bool = False
+    is_saving_notes: bool = False
+    data_ops_enabled: bool = DATA_OPERATIONS_ENABLED
 
     # Notifications
     notification_message: str = ""
@@ -98,52 +136,10 @@ class ClaimsState(rx.State):
                 response = await client.get(f"{API_URL}/api/claims", params=params)
                 if response.status_code == 200:
                     data = response.json()
-                    claims = data.get("claims", [])
-
-                    for claim in claims:
-                        # Normalize numeric fields
-                        amount_raw = claim.get("claim_amount", 0) or 0
-                        try:
-                            amount = float(amount_raw)
-                        except (TypeError, ValueError):
-                            amount = 0.0
-
-                        score_raw = claim.get("risk_score", 0) or 0
-                        try:
-                            score = float(score_raw)
-                        except (TypeError, ValueError):
-                            score = 0.0
-
-                        pending_days = claim.get("days_pending")
-                        if pending_days is None:
-                            pending_days = claim.get("pending_days", 0)
-                        try:
-                            pending_days = int(pending_days or 0)
-                        except (TypeError, ValueError):
-                            pending_days = 0
-
-                        status = str(claim.get("status", "")).lower()
-                        reasons: list[str] = []
-
-                        if amount > 5000:
-                            reasons.append("Amount > $5,000")
-                        if status == "pending" and pending_days > 30:
-                            reasons.append("Pending > 30 days")
-                        if claim.get("risk_reason"):
-                            reasons.append(str(claim["risk_reason"]))
-
-                        claim["ui_risk_reason"] = " • ".join(dict.fromkeys(reasons)) if reasons else ""
-
-                        if score >= 0.7:
-                            claim["ui_risk_level"] = "high"
-                        elif score >= 0.4:
-                            claim["ui_risk_level"] = "medium"
-                        else:
-                            claim["ui_risk_level"] = "low"
-
-                        claim["ui_has_reason"] = bool(reasons)
-
-                    self.claims_data = claims
+                    raw_claims = data.get("claims", [])
+                    self.claims_data = [self._normalize_claim(raw) for raw in raw_claims]
+                    if self.selected_claim_id:
+                        self._sync_modal_claim()
                     self.error_message = ""
                 else:
                     self.error_message = f"Failed to load claims: {response.status_code}"
@@ -337,19 +333,49 @@ class ClaimsState(rx.State):
         await self.set_date_range(self.date_start, end)
 
     # Modal actions
-    def open_claim_modal(self, claim_id: str):
+    def open_claim_modal(self, event_or_id):
+        """Open claim modal. Accepts either an event dict or a claim ID string."""
+        claim_id = ""
+
+        # Debug: print the type and keys if it's a dict
+        if isinstance(event_or_id, dict):
+            print(f"[DEBUG] Event is dict with keys: {list(event_or_id.keys())}")
+            # Try different possible keys for the target element
+            for possible_key in ['current_target', 'currentTarget', 'target', 'srcElement']:
+                if possible_key in event_or_id:
+                    target = event_or_id[possible_key]
+                    if isinstance(target, dict) and 'id' in target:
+                        claim_id = target['id']
+                        print(f"[DEBUG] Found claim_id in event['{possible_key}']['id']: {claim_id}")
+                        break
+
+            # If still no claim_id, check if there's an 'id' key directly
+            if not claim_id and 'id' in event_or_id:
+                claim_id = event_or_id['id']
+                print(f"[DEBUG] Found claim_id in event['id']: {claim_id}")
+        else:
+            claim_id = str(event_or_id)
+            print(f"[DEBUG] Using claim_id directly: {claim_id}")
+
         self.selected_claim_id = claim_id
+        self._sync_modal_claim()
         self.show_claim_modal = True
 
     def close_claim_modal(self):
         self.show_claim_modal = False
         self.selected_claim_id = ""
+        self.modal_claim = self._default_modal_claim()
+        self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
+        self.modal_notes = ""
 
     def set_show_claim_modal(self, value: bool):
         """Explicit setter to avoid relying on auto-generated setters."""
         self.show_claim_modal = value
         if not value:
             self.selected_claim_id = ""
+            self.modal_claim = self._default_modal_claim()
+            self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
+            self.modal_notes = ""
 
     @rx.var
     def selected_claim(self) -> Dict:
@@ -358,6 +384,203 @@ class ClaimsState(rx.State):
             if str(claim.get("id")) == str(self.selected_claim_id):
                 return claim
         return {}
+
+    def _sync_modal_claim(self):
+        """Update the modal claim dict based on the selected claim id."""
+        if not self.selected_claim_id:
+            self.modal_claim = self._default_modal_claim()
+            self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
+            self.modal_notes = ""
+            return
+
+        selected = next(
+            (
+                claim
+                for claim in self.claims_data
+                if str(claim.get("id")) == str(self.selected_claim_id)
+            ),
+            None,
+        )
+
+        if selected is None:
+            self.modal_claim = self._default_modal_claim()
+            self.modal_quick_stats = DEFAULT_QUICK_STATS.copy()
+            self.modal_notes = ""
+        else:
+            hydrated = {**self._default_modal_claim(), **selected}
+            self.modal_claim = hydrated
+            self.modal_notes = hydrated.get("processor_notes", "")
+            self.modal_quick_stats = self._compute_quick_stats(hydrated)
+
+    @rx.var
+    def has_modal_claim(self) -> bool:
+        claim = self.modal_claim
+        return bool(claim and claim.get("id"))
+
+    def _default_modal_claim(self) -> Dict:
+        return DEFAULT_MODAL_CLAIM.copy()
+
+    def _normalize_claim(self, claim: Dict) -> Dict:
+        data = {**DEFAULT_MODAL_CLAIM, **(claim or {})}
+
+        try:
+            amount = float(data.get("claim_amount", 0) or 0)
+        except (TypeError, ValueError):
+            amount = 0.0
+        data["claim_amount"] = amount
+        data["claim_amount_formatted"] = f"${amount:,.2f}"
+
+        approved = data.get("approved_amount")
+        try:
+            approved_value = float(approved) if approved is not None else None
+        except (TypeError, ValueError):
+            approved_value = None
+        data["approved_amount"] = approved_value
+        data["approved_amount_formatted"] = (
+            f"${approved_value:,.2f}" if approved_value is not None else "—"
+        )
+
+        claim_date = data.get("claim_date")
+        if isinstance(claim_date, datetime):
+            data["claim_date"] = claim_date.strftime("%Y-%m-%d")
+        elif claim_date in (None, ""):
+            data["claim_date"] = "—"
+        else:
+            data["claim_date"] = str(claim_date)
+
+        data["id"] = str(data.get("id", ""))
+        data["status"] = str(data.get("status", "unknown")).lower()
+
+        try:
+            risk_score = float(data.get("risk_score", 0) or 0)
+        except (TypeError, ValueError):
+            risk_score = 0.0
+        data["risk_score"] = round(risk_score, 2)
+
+        existing_days = data.get("days_pending")
+        try:
+            days_pending = float(existing_days) if existing_days is not None else 0.0
+        except (TypeError, ValueError):
+            days_pending = 0.0
+
+        if not days_pending:
+            try:
+                claim_dt = datetime.fromisoformat(data["claim_date"])
+                if data["status"] == "pending":
+                    days_pending = max((datetime.utcnow() - claim_dt).days, 0)
+                else:
+                    processed_date = data.get("processed_date")
+                    if processed_date:
+                        processed_dt = datetime.fromisoformat(str(processed_date))
+                        days_pending = max((processed_dt - claim_dt).days, 0)
+            except Exception:
+                days_pending = 0.0
+        data["days_pending"] = float(days_pending)
+
+        reasons: list[str] = []
+        if amount > 5000:
+            reasons.append("Amount > $5,000")
+        if data["status"] == "pending" and data["days_pending"] > 30:
+            reasons.append("Pending > 30 days")
+        if data.get("denial_reason"):
+            reasons.append(str(data["denial_reason"]))
+        if data.get("risk_reason"):
+            reasons.append(str(data["risk_reason"]))
+
+        if reasons:
+            reason_text = " • ".join(dict.fromkeys(reasons))
+        else:
+            reason_text = ""
+        data["ui_risk_reason"] = reason_text
+        data["ui_has_reason"] = bool(reason_text)
+
+        data["provider_id"] = str(data.get("provider_id", "Unknown"))
+        provider_name = data.get("provider_name") or data["provider_id"] or "Unknown"
+        data["provider_name"] = provider_name
+        data["patient_id"] = data.get("patient_id") or "—"
+        data["procedure_code"] = data.get("procedure_code") or data.get("procedure_codes") or "—"
+        data["procedure_codes"] = data.get("procedure_codes") or data["procedure_code"]
+        data["diagnosis_code"] = data.get("diagnosis_code") or "—"
+        data["processor_notes"] = data.get("processor_notes") or ""
+
+        if risk_score >= 0.7:
+            data["ui_risk_level"] = "high"
+        elif risk_score >= 0.4:
+            data["ui_risk_level"] = "medium"
+        else:
+            data["ui_risk_level"] = "low"
+
+        return data
+
+    def _compute_quick_stats(self, claim: Dict) -> Dict:
+        stats = DEFAULT_QUICK_STATS.copy()
+        if not claim:
+            return stats
+
+        provider_id = claim.get("provider_id")
+        provider_claims = [c for c in self.claims_data if str(c.get("provider_id")) == str(provider_id)]
+        total_claims = len(provider_claims)
+        approvals = sum(1 for c in provider_claims if c.get("status") == "approved")
+        approval_rate = approvals / total_claims if total_claims else 0
+
+        if total_claims <= 1:
+            provider_summary = "First time filing with ClaimsIQ."
+        else:
+            provider_summary = (
+                f"Returning provider ({total_claims - 1} prior claims, {int(round(approval_rate * 100))}% approval)."
+            )
+
+        claim_id = claim.get("id")
+        diagnosis_code = claim.get("diagnosis_code")
+        procedure_code = claim.get("procedure_code") or claim.get("procedure_codes")
+
+        same_diag = 0
+        same_proc = 0
+        for other in self.claims_data:
+            if str(other.get("id")) == str(claim_id):
+                continue
+            if diagnosis_code and other.get("diagnosis_code") == diagnosis_code:
+                same_diag += 1
+            other_proc = other.get("procedure_code") or other.get("procedure_codes")
+            if procedure_code and other_proc == procedure_code:
+                same_proc += 1
+
+        if same_diag or same_proc:
+            parts = []
+            if same_diag:
+                parts.append(f"{same_diag} share diagnosis")
+            if same_proc:
+                parts.append(f"{same_proc} share procedure")
+            similar_summary = ", ".join(parts)
+        else:
+            similar_summary = "No similar claims found."
+
+        days_pending = int(claim.get("days_pending") or 0)
+        status = claim.get("status")
+        if status == "pending":
+            days_label = f"{days_pending} days pending" if days_pending else "Pending (no timer)"
+        else:
+            days_label = "Processed today" if days_pending == 0 else f"Processed in {days_pending} days"
+
+        stats["provider_summary"] = provider_summary
+        stats["similar_summary"] = similar_summary
+        stats["days_pending_label"] = days_label
+        return stats
+
+    def _patch_claim_in_list(self, updated_claim: Dict):
+        normalized = self._normalize_claim(updated_claim)
+        patched = []
+        for claim in self.claims_data:
+            if str(claim.get("id")) == normalized["id"]:
+                merged = {**claim, **normalized}
+                patched.append(merged)
+            else:
+                patched.append(claim)
+        self.claims_data = patched
+        if str(self.selected_claim_id) == normalized["id"]:
+            self.modal_claim = {**self._default_modal_claim(), **normalized}
+            self.modal_notes = self.modal_claim.get("processor_notes", "")
+            self.modal_quick_stats = self._compute_quick_stats(self.modal_claim)
 
     # Theme toggle
     def toggle_dark_mode(self):
@@ -475,6 +698,9 @@ class ClaimsState(rx.State):
 
     async def load_kaggle_data(self):
         """Load real insurance data from Kaggle"""
+        if not self.data_ops_enabled:
+            self.show_toast("Data operations are disabled in this environment.", "warning")
+            return
         self.is_loading_data = True
         self.show_toast("Downloading Kaggle dataset...", "info")
 
@@ -503,6 +729,9 @@ class ClaimsState(rx.State):
 
     async def generate_sample_data(self, num_claims: int = 1000):
         """Generate synthetic sample data"""
+        if not self.data_ops_enabled:
+            self.show_toast("Data operations are disabled in this environment.", "warning")
+            return
         self.is_loading_data = True
         self.show_toast(f"Generating {num_claims} sample claims...", "info")
 
@@ -532,6 +761,9 @@ class ClaimsState(rx.State):
 
     async def clear_all_data(self):
         """Clear all data from the database"""
+        if not self.data_ops_enabled:
+            self.show_toast("Data operations are disabled in this environment.", "warning")
+            return
         self.is_loading_data = True
         self.show_toast("Clearing all data...", "info")
 
@@ -557,55 +789,88 @@ class ClaimsState(rx.State):
 
     # Claim Actions (Approve/Deny/Flag)
     async def approve_claim(self, claim_id: str):
-        """Approve a claim"""
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.put(
-                    f"{API_URL}/api/claims/{claim_id}/status",
-                    json={"status": "approved"}
-                )
-
-                if response.status_code == 200:
-                    self.show_toast(f"✓ Claim {claim_id} approved successfully", "success")
-                    self.close_claim_modal()
-                    await self.load_all_data()
-                else:
-                    self.show_toast(f"Failed to approve claim: {response.status_code}", "error")
-        except Exception as e:
-            self.show_toast(f"Error approving claim: {str(e)}", "error")
+        await self._update_claim_status(
+            claim_id,
+            payload={"status": "approved"},
+            success_message=f"✓ Claim {claim_id} approved successfully",
+            toast_type="success",
+        )
 
     async def deny_claim(self, claim_id: str, reason: str = ""):
-        """Deny a claim"""
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.put(
-                    f"{API_URL}/api/claims/{claim_id}/status",
-                    json={"status": "denied", "reason": reason}
-                )
-
-                if response.status_code == 200:
-                    self.show_toast(f"✗ Claim {claim_id} denied", "success")
-                    self.close_claim_modal()
-                    await self.load_all_data()
-                else:
-                    self.show_toast(f"Failed to deny claim: {response.status_code}", "error")
-        except Exception as e:
-            self.show_toast(f"Error denying claim: {str(e)}", "error")
+        await self._update_claim_status(
+            claim_id,
+            payload={"status": "denied", "reason": reason},
+            success_message=f"✗ Claim {claim_id} denied",
+            toast_type="success",
+        )
 
     async def flag_claim(self, claim_id: str, note: str = ""):
-        """Flag a claim for review"""
+        await self._update_claim_status(
+            claim_id,
+            payload={"status": "flagged", "reason": note},
+            success_message=f"⚠ Claim {claim_id} flagged for review",
+            toast_type="warning",
+        )
+
+    async def _update_claim_status(self, claim_id: str, payload: Dict, success_message: str, toast_type: str):
+        if self.is_processing_claim:
+            return
+        self.is_processing_claim = True
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.put(
                     f"{API_URL}/api/claims/{claim_id}/status",
-                    json={"status": "flagged", "note": note}
+                    json=payload,
                 )
 
-                if response.status_code == 200:
-                    self.show_toast(f"⚠ Claim {claim_id} flagged for review", "warning")
-                    self.close_claim_modal()
-                    await self.load_all_data()
-                else:
-                    self.show_toast(f"Failed to flag claim: {response.status_code}", "error")
-        except Exception as e:
-            self.show_toast(f"Error flagging claim: {str(e)}", "error")
+            if response.status_code == 200:
+                body = response.json()
+                claim = body.get("claim", {})
+                self._patch_claim_in_list(claim)
+                self.show_toast(success_message, toast_type)
+                self.close_claim_modal()
+                await self.load_summary()
+                await self.load_claims()
+            else:
+                self.show_toast(
+                    f"Failed to update claim ({response.status_code})",
+                    "error",
+                )
+        except Exception as exc:
+            self.show_toast(f"Error updating claim: {exc}", "error")
+        finally:
+            self.is_processing_claim = False
+
+    def set_modal_notes(self, value: str):
+        self.modal_notes = value
+
+    async def save_modal_notes(self):
+        if not self.selected_claim_id:
+            self.show_toast("Select a claim before saving notes.", "warning")
+            return
+        if self.is_saving_notes:
+            return
+        self.is_saving_notes = True
+        try:
+            trimmed_note = self.modal_notes.strip()
+            async with httpx.AsyncClient() as client:
+                response = await client.put(
+                    f"{API_URL}/api/claims/{self.selected_claim_id}/notes",
+                    json={"note": trimmed_note},
+                )
+
+            if response.status_code == 200:
+                body = response.json()
+                claim = body.get("claim", {})
+                self._patch_claim_in_list(claim)
+                self.modal_notes = trimmed_note
+                self.show_toast("Notes saved", "success")
+            else:
+                self.show_toast(
+                    f"Failed to save notes ({response.status_code})",
+                    "error",
+                )
+        except Exception as exc:
+            self.show_toast(f"Error saving notes: {exc}", "error")
+        finally:
+            self.is_saving_notes = False

@@ -1,5 +1,13 @@
-import pandas as pd
+import os
+import sys
 import pytest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+try:
+    import pandas as pd
+except ModuleNotFoundError:
+    pd = None
 from fastapi.testclient import TestClient
 
 from backend import app as api_app
@@ -9,47 +17,55 @@ from backend.services.data_service import DataService
 @pytest.fixture
 def sample_claims_df():
     """Sample claims dataframe used across tests."""
-    return pd.DataFrame(
-        [
-            {
-                "id": "CLM-001",
-                "status": "approved",
-                "claim_amount": 2500.0,
-                "approved_amount": 2400.0,
-                "claim_date": "2024-01-10",
-                "provider_id": "PROV-1",
-            },
-            {
-                "id": "CLM-002",
-                "status": "pending",
-                "claim_amount": 6200.0,
-                "approved_amount": None,
-                "claim_date": "2023-12-15",
-                "provider_id": "PROV-2",
-            },
-            {
-                "id": "CLM-003",
-                "status": "flagged",
-                "claim_amount": 15000.0,
-                "approved_amount": 0.0,
-                "claim_date": "2023-11-30",
-                "provider_id": "PROV-3",
-            },
-            {
-                "id": "CLM-004",
-                "status": "approved",
-                "claim_amount": 4200.0,
-                "approved_amount": 4100.0,
-                "claim_date": "2024-02-05",
-                "provider_id": "PROV-2",
-            },
-        ]
-    )
+    if pd is None:
+        pytest.skip("pandas is required for backend tests")
+    base_rows = [
+        {
+            "id": "CLM-001",
+            "status": "approved",
+            "claim_amount": 2500.0,
+            "approved_amount": 2400.0,
+            "claim_date": "2024-01-10",
+            "provider_id": "PROV-1",
+        },
+        {
+            "id": "CLM-002",
+            "status": "pending",
+            "claim_amount": 6200.0,
+            "approved_amount": None,
+            "claim_date": "2023-12-15",
+            "provider_id": "PROV-2",
+        },
+        {
+            "id": "CLM-003",
+            "status": "flagged",
+            "claim_amount": 15000.0,
+            "approved_amount": 0.0,
+            "claim_date": "2023-11-30",
+            "provider_id": "PROV-3",
+        },
+        {
+            "id": "CLM-004",
+            "status": "approved",
+            "claim_amount": 4200.0,
+            "approved_amount": 4100.0,
+            "claim_date": "2024-02-05",
+            "provider_id": "PROV-2",
+        },
+    ]
+
+    df = pd.DataFrame(base_rows)
+    df["denial_reason"] = None
+    df["processed_date"] = None
+    df["days_to_process"] = 0.0
+    return df
 
 
 @pytest.fixture
 def sample_providers_df():
     """Sample providers dataframe used across tests."""
+    if pd is None:
+        pytest.skip("pandas is required for backend tests")
     return pd.DataFrame(
         [
             {"id": "PROV-1", "name": "Provider Alpha"},
@@ -69,6 +85,24 @@ def preload_data(monkeypatch, sample_claims_df, sample_providers_df):
     DataService._providers_cache = sample_providers_df.copy()
 
     monkeypatch.setattr(DataService, "refresh_cache", lambda: None)
+
+    def fake_update_claim_record(claim_id: str, updates: dict) -> int:
+        df = DataService._claims_cache
+        if df is None or df.empty:
+            return 0
+        mask = df["id"] == claim_id
+        if not mask.any():
+            return 0
+        for column, value in updates.items():
+            df.loc[mask, column] = value
+        DataService._claims_cache = df
+        return 1
+
+    def fake_update_claim_cache(claim_id: str, updates: dict) -> None:
+        fake_update_claim_record(claim_id, updates)
+
+    monkeypatch.setattr(DataService, "update_claim_record", staticmethod(fake_update_claim_record))
+    monkeypatch.setattr(DataService, "update_claim_cache", staticmethod(fake_update_claim_cache))
     yield
 
     DataService._claims_cache = original_claims

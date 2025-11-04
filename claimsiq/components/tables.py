@@ -124,6 +124,68 @@ def sticky_cell(content: rx.Component) -> rx.Component:
         border_right="1px solid #e5e7eb",
     )
 
+
+def claim_row(claim: dict) -> rx.Component:
+    """Create a table row for a single claim."""
+    return rx.table.row(
+        sticky_cell(
+            rx.text(
+                claim["id"],
+                weight="medium",
+            )
+        ),
+        rx.table.cell(
+            rx.text(
+                rx.cond(
+                    claim.get("provider_name"),
+                    claim.get("provider_name"),
+                    rx.cond(
+                        claim.get("provider_id"),
+                        claim.get("provider_id"),
+                        "—"
+                    )
+                ),
+                color=COLORS["gray_600"],
+            )
+        ),
+        rx.table.cell(
+            rx.text(
+                claim["claim_date"],
+                color=COLORS["gray_600"],
+            )
+        ),
+        rx.table.cell(
+            rx.text(
+                claim.get("claim_amount_formatted", "$0.00"),
+                weight="medium",
+                color=COLORS["gray_900"],
+            )
+        ),
+        rx.table.cell(
+            status_badge(claim["status"])
+        ),
+        rx.table.cell(
+            risk_badge(
+                claim["risk_score"],
+                reason=claim["ui_risk_reason"],
+                has_reason=claim["ui_has_reason"],
+            )
+        ),
+        # Store claim ID in id attribute for extraction
+        id=claim["id"],
+        on_click=ClaimsState.open_claim_modal,
+        cursor="pointer",
+        class_name=rx.match(
+            claim["ui_risk_level"],
+            ("high", HIGH_ROW_CLASS),
+            ("medium", MEDIUM_ROW_CLASS),
+            ("low", LOW_ROW_CLASS),
+            LOW_ROW_CLASS,
+        ),
+        role="button",
+        aria_label=f"View claim {claim['id']}",
+    )
+
 def claims_table() -> rx.Component:
     return rx.box(
         rx.vstack(
@@ -238,62 +300,7 @@ def claims_table() -> rx.Component:
                             rx.table.body(
                                 rx.foreach(
                                     ClaimsState.paginated_claims,
-                                    lambda claim: rx.table.row(
-                                        sticky_cell(
-                                            rx.text(
-                                                claim["id"],
-                                                weight="medium",
-                                            )
-                                        ),
-                                        rx.table.cell(
-                                            rx.text(
-                                                rx.cond(
-                                                    claim.get("provider_name"),
-                                                    claim.get("provider_name"),
-                                                    rx.cond(
-                                                        claim.get("provider_id"),
-                                                        claim.get("provider_id"),
-                                                        "—"
-                                                    )
-                                                ),
-                                                color=COLORS["gray_600"],
-                                            )
-                                        ),
-                                        rx.table.cell(
-                                            rx.text(
-                                                claim["claim_date"],
-                                                color=COLORS["gray_600"],
-                                            )
-                                        ),
-                                        rx.table.cell(
-                                            rx.text(
-                                                claim.get("claim_amount_formatted", "$0.00"),
-                                                weight="medium",
-                                                color=COLORS["gray_900"],
-                                            )
-                                        ),
-                                        rx.table.cell(
-                                            status_badge(claim["status"])
-                                        ),
-                                        rx.table.cell(
-                                            risk_badge(
-                                                claim["risk_score"],
-                                                reason=claim["ui_risk_reason"],
-                                                has_reason=claim["ui_has_reason"],
-                                            )
-                                        ),
-                                        on_click=lambda claim_id=claim["id"]: ClaimsState.open_claim_modal(str(claim_id)),
-                                        cursor="pointer",
-                                        class_name=rx.match(
-                                            claim["ui_risk_level"],
-                                            ("high", HIGH_ROW_CLASS),
-                                            ("medium", MEDIUM_ROW_CLASS),
-                                            ("low", LOW_ROW_CLASS),
-                                            LOW_ROW_CLASS,
-                                        ),
-                                        role="button",
-                                        aria_label=f"View claim {claim['id']}",
-                                    )
+                                    claim_row
                                 )
                             ),
                             width="100%",

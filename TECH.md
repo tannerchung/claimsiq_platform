@@ -298,6 +298,42 @@ def claim_detail_modal() -> rx.Component:
     )
 ```
 
+#### Component Function Pattern for rx.foreach (CRITICAL)
+```python
+# WRONG: Lambda closure inside rx.foreach doesn't capture variables correctly
+rx.table.body(
+    rx.foreach(
+        ClaimsState.paginated_claims,
+        lambda claim: rx.table.row(
+            rx.table.cell(claim["id"]),
+            # This lambda doesn't capture claim["id"] correctly!
+            on_click=lambda claim_id=claim["id"]: ClaimsState.open_modal(claim_id)
+        )
+    )
+)
+
+# CORRECT: Extract to component function
+def claim_row(claim: dict) -> rx.Component:
+    """Component function properly captures claim in its scope."""
+    return rx.table.row(
+        rx.table.cell(claim["id"]),
+        # Direct access to claim["id"] works here!
+        on_click=lambda: ClaimsState.open_modal(claim["id"]),
+        cursor="pointer"
+    )
+
+rx.table.body(
+    rx.foreach(
+        ClaimsState.paginated_claims,
+        claim_row  # Pass function reference
+    )
+)
+```
+
+**Why this matters:** Reflex compiles Python to JavaScript. Lambda closures inside foreach loops don't bind correctly during compilation, causing event handlers to receive JavaScript event objects instead of your data.
+
+**Fixed in:** `claimsiq/components/tables_dark.py:220-301`
+
 ---
 
 ## Backend Architecture (FastAPI)
@@ -864,11 +900,15 @@ close_claim_modal()
 
 ---
 
-**Version:** 2.0 (Production Ready - Enterprise Grade)
-**Last Updated:** 2025-11-03
+**Version:** 2.1 (Production Ready - Enterprise Grade)
+**Last Updated:** 2025-11-04
 **Focus:** Enterprise UI, advanced analytics, production-ready features
 
-**Total Lines of Code Added:** ~1,275 lines across all phases
-**Components:** 10 component files, 3 charts, 8 UI helpers
+**Total Lines of Code Added:** ~1,350+ lines across all phases
+**Components:** 11 component files, 3 charts, 8 UI helpers
 **State Variables:** 30+ state variables, 10+ computed properties
 **Features:** Search, sort, pagination, filters, export, modal, charts, dark mode, notifications
+
+**Critical Fixes:**
+- Lambda closure issue in rx.foreach resolved (tables_dark.py:220-301)
+- Component function pattern implemented for proper event handling

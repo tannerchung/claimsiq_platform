@@ -102,7 +102,7 @@ claimsiq-platform/
 | `components/ui_helpers.py` | Reusable utilities (empty states, skeletons, sortable headers) | 80-110 |
 | `theme.py` | Design system (25+ colors, shadows, gradients, transitions) | 90-120 |
 
-**Total:** ~1,530-1,900 lines of frontend code
+**Total:** ~1,590-1,980 lines of frontend code (includes lambda closure fix)
 
 ---
 
@@ -197,19 +197,20 @@ claimsiq-platform/
 - No command line required
 - ~90 lines
 
-**`components/tables.py`** - Advanced Claims Table
+**`components/tables.py` / `tables_dark.py`** - Advanced Claims Table
 - Real-time search across ID, patient name, status
 - Status dropdown filter
 - 4 sortable columns (ID, Date, Amount, Risk Score)
 - Pagination (25 items per page, previous/next buttons)
 - Risk badges with icons (alert-triangle, alert-circle, check-circle)
 - Status badges with color schemes
-- Clickable rows to open modal
+- Clickable rows to open modal (uses component function pattern to avoid lambda closure issues)
 - Export to CSV button
 - Advanced filters button
 - Empty state for no results
 - Loading spinner state
-- ~247 lines
+- **CRITICAL FIX:** Extracted `dark_claim_row()` component function to properly handle click events in rx.foreach
+- ~247-409 lines (dark mode version includes component function)
 
 **`components/filters_dark.py`** - Integrated Filters Bar (Claims Queue)
 - Horizontal layout positioned at top of Claims Queue section

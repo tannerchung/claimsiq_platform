@@ -243,8 +243,39 @@ claimsiq-platform/
 - Not converting Vars before comparisons (use `.to(float)`)
 - Invalid icon names with hyphens (use underscores or simple names)
 - Using `.get()` on Reflex Var dicts (use bracket notation)
+- **Lambda closures inside `rx.foreach` loops don't capture variables correctly** (extract to component function)
 
 **These issues cause compilation errors 100% of the time. Check the best practices doc first!**
+
+### Lambda Closure Issue in rx.foreach (CRITICAL FIX)
+
+**WRONG PATTERN** - Lambda inside foreach doesn't capture variable:
+```python
+rx.foreach(
+    items,
+    lambda item: rx.button(
+        "Click me",
+        on_click=lambda item_id=item["id"]: MyState.handle_click(item_id)
+    )
+)
+```
+This compiles to JavaScript incorrectly and passes event objects as strings instead of the actual item ID.
+
+**CORRECT PATTERN** - Extract to component function:
+```python
+def item_row(item: dict) -> rx.Component:
+    """Component function properly captures item in its scope."""
+    return rx.button(
+        "Click me",
+        on_click=lambda: MyState.handle_click(item["id"])  # Direct access works!
+    )
+
+rx.foreach(items, item_row)  # Pass function reference, not inline lambda
+```
+
+**Why this matters:** Reflex compiles Python to JavaScript. Lambda closures inside foreach loops don't bind correctly during compilation, causing event handlers to receive JavaScript event objects instead of your data.
+
+**Fixed in:** `claimsiq/components/tables_dark.py` (lines 220-301)
 
 ---
 

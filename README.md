@@ -610,6 +610,10 @@ Comprehensive documentation available:
 
 ---
 
-**Version:** 2.0 (Production Ready)
-**Last Updated:** 2025-11-03
+**Version:** 2.1 (Production Ready)
+**Last Updated:** 2025-11-04
 **Status:** 🚀 Production Ready - Enterprise Grade
+
+**Recent Fixes:**
+- ✅ Lambda closure issue in rx.foreach resolved (modal now displays claim data correctly)
+- ✅ Component function pattern implemented for proper event handling in table rows

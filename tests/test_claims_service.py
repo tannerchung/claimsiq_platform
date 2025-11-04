@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from backend.services.claims_service import ClaimsService
 from backend.services.data_service import DataService
@@ -59,3 +60,40 @@ def test_filter_claims_empty_dataset(monkeypatch):
 
     result = ClaimsService.filter_claims(status="approved")
     assert result == {"claims": [], "total": 0, "page": 0, "page_size": 100}
+
+
+def test_update_claim_status_denied_sets_reason(sample_claims_df):
+    updated, stats = ClaimsService.update_claim_status("CLM-001", "denied", reason="Incomplete docs")
+
+    assert updated["status"] == "denied"
+    assert updated["denial_reason"] == "Incomplete docs"
+    assert "provider_summary" in stats
+    df = DataService.get_claims()
+    row = df[df["id"] == "CLM-001"].iloc[0]
+    assert row["status"] == "denied"
+    assert row["denial_reason"] == "Incomplete docs"
+
+
+def test_update_claim_status_approved_sets_processed(sample_claims_df):
+    updated, stats = ClaimsService.update_claim_status("CLM-002", "approved")
+
+    assert updated["status"] == "approved"
+    assert updated["processed_date"] is not None
+    assert "similar_summary" in stats
+    df = DataService.get_claims()
+    row = df[df["id"] == "CLM-002"].iloc[0]
+    assert row["status"] == "approved"
+
+
+def test_update_claim_status_invalid(sample_claims_df):
+    with pytest.raises(ClaimsService.InvalidStatusError):
+        ClaimsService.update_claim_status("CLM-001", "escalated")
+
+
+def test_update_claim_notes(sample_claims_df):
+    updated = ClaimsService.update_claim_notes("CLM-003", "Review with provider")
+
+    assert updated["processor_notes"] == "Review with provider"
+    df = DataService.get_claims()
+    row = df[df["id"] == "CLM-003"].iloc[0]
+    assert row["processor_notes"] == "Review with provider"

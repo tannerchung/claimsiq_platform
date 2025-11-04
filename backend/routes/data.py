@@ -9,6 +9,8 @@ from pydantic import BaseModel
 import sys
 import os
 
+from backend.services.data_service import DataService
+
 # Add scripts directory to path so we can import load_sample_data
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../scripts'))
 
@@ -58,6 +60,7 @@ async def load_kaggle_dataset():
 
         # Load to database
         load_data_to_db(claims_df, providers_df)
+        DataService.refresh_cache()
 
         return DataLoadResponse(
             success=True,
@@ -102,6 +105,7 @@ async def generate_sample_dataset(num_claims: int = 1000):
 
         # Load to database
         load_data_to_db(claims_df, providers_df)
+        DataService.refresh_cache()
 
         return DataLoadResponse(
             success=True,
@@ -141,6 +145,8 @@ async def clear_database():
             providers_deleted = result_providers.rowcount
 
             conn.commit()
+
+        DataService.refresh_cache()
 
         return DataLoadResponse(
             success=True,

@@ -46,3 +46,28 @@ def test_analytics_risks_endpoint(client: TestClient):
     assert "high_risk_count" in payload
     assert "distribution" in payload
     assert set(payload["distribution"].keys()) == {"low", "medium", "high"}
+
+
+def test_update_claim_status_endpoint(client: TestClient):
+    response = client.put(
+        "/api/claims/CLM-001/status",
+        json={"status": "denied", "reason": "Documentation missing"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["claim"]["status"] == "denied"
+    assert "quick_stats" in payload
+
+
+def test_update_claim_notes_endpoint(client: TestClient):
+    response = client.put(
+        "/api/claims/CLM-002/notes",
+        json={"note": "Reviewed by supervisor"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["claim"]["processor_notes"] == "Reviewed by supervisor"

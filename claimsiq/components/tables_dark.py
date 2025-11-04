@@ -217,6 +217,90 @@ def sortable_header_dark(
     )
 
 
+def dark_claim_row(claim: dict) -> rx.Component:
+    """Create a table row for a single claim - dark mode version."""
+    return rx.table.row(
+        # Claim ID - bold
+        dark_table_cell(
+            rx.text(
+                claim["id"],
+                color=DARK_COLORS["primary"],
+            ),
+            is_bold=True,
+        ),
+
+        # Provider - regular
+        dark_table_cell(
+            rx.text(
+                claim.get("provider_id", "—"),
+            ),
+        ),
+
+        # Date - regular
+        dark_table_cell(
+            rx.text(
+                claim["claim_date"],
+            ),
+        ),
+
+        # Amount - LARGE and BOLD
+        dark_table_cell(
+            rx.text(
+                claim.get("claim_amount_formatted", "$0.00"),
+                color=DARK_COLORS["success"],  # Green for money
+            ),
+            is_amount=True,
+        ),
+
+        # Status badge - enhanced
+        rx.table.cell(
+            status_badge_dark(claim["status"]),
+            style={
+                "padding": "16px 12px",
+            },
+        ),
+
+        # Risk badge - enhanced
+        rx.table.cell(
+            risk_badge_dark(claim.get("risk_score", 0)),
+            style={
+                "padding": "16px 12px",
+            },
+        ),
+
+        # Actions
+        rx.table.cell(
+            rx.icon_button(
+                rx.icon("eye", size=18),
+                on_click=lambda: ClaimsState.open_claim_modal(claim["id"]),
+                size="2",
+                variant="ghost",
+                style={
+                    "color": DARK_COLORS["primary"],
+                    "_hover": {
+                        "background": DARK_COLORS["primary_bg"],
+                    },
+                },
+            ),
+            style={
+                "padding": "16px 12px",
+            },
+        ),
+
+        on_click=lambda: ClaimsState.open_claim_modal(claim["id"]),
+        style={
+            "cursor": "pointer",
+            "transition": "all 0.2s ease",
+            "_hover": {
+                "background": DARK_COLORS["bg_tertiary"],
+                "box-shadow": DARK_SHADOWS["glow"],
+            },
+        },
+        # CSS for alternating rows
+        class_name="[&:nth-child(even)]:bg-[#1a1f2e] [&:nth-child(odd)]:bg-[#0f1419]",
+    )
+
+
 def dark_claims_table() -> rx.Component:
     """
     Enhanced claims table for dark mode with:
@@ -313,86 +397,7 @@ def dark_claims_table() -> rx.Component:
             rx.table.body(
                 rx.foreach(
                     ClaimsState.paginated_claims,
-                    lambda claim: rx.table.row(
-                        # Claim ID - bold
-                        dark_table_cell(
-                            rx.text(
-                                claim["id"],
-                                color=DARK_COLORS["primary"],
-                            ),
-                            is_bold=True,
-                        ),
-
-                        # Provider - regular
-                        dark_table_cell(
-                            rx.text(
-                                claim.get("provider_id", "—"),
-                            ),
-                        ),
-
-                        # Date - regular
-                        dark_table_cell(
-                            rx.text(
-                                claim["claim_date"],
-                            ),
-                        ),
-
-                        # Amount - LARGE and BOLD
-                        dark_table_cell(
-                            rx.text(
-                                claim.get("claim_amount_formatted", "$0.00"),
-                                color=DARK_COLORS["success"],  # Green for money
-                            ),
-                            is_amount=True,
-                        ),
-
-                        # Status badge - enhanced
-                        rx.table.cell(
-                            status_badge_dark(claim["status"]),
-                            style={
-                                "padding": "16px 12px",
-                            },
-                        ),
-
-                        # Risk badge - enhanced
-                        rx.table.cell(
-                            risk_badge_dark(claim.get("risk_score", 0)),
-                            style={
-                                "padding": "16px 12px",
-                            },
-                        ),
-
-                        # Actions
-                        rx.table.cell(
-                            rx.icon_button(
-                                rx.icon("eye", size=18),
-                                on_click=lambda claim_id=claim["id"]: ClaimsState.open_claim_modal(str(claim_id)),
-                                size="2",
-                                variant="ghost",
-                                style={
-                                    "color": DARK_COLORS["primary"],
-                                    "_hover": {
-                                        "background": DARK_COLORS["primary_bg"],
-                                    },
-                                },
-                            ),
-                            style={
-                                "padding": "16px 12px",
-                            },
-                        ),
-
-                        on_click=lambda claim_id=claim["id"]: ClaimsState.open_claim_modal(str(claim_id)),
-                        style={
-                            "cursor": "pointer",
-                            "transition": "all 0.2s ease",
-                            "_hover": {
-                                "background": DARK_COLORS["bg_tertiary"],
-                                "box-shadow": DARK_SHADOWS["glow"],
-                            },
-                        },
-                        # CSS for alternating rows
-                        class_name="[&:nth-child(even)]:bg-[#1a1f2e] [&:nth-child(odd)]:bg-[#0f1419]",
-                    ),
+                    dark_claim_row
                 ),
             ),
 
