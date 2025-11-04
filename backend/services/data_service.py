@@ -27,7 +27,7 @@ class DataService:
     
     @staticmethod
     def get_claims() -> pd.DataFrame:
-        if DataService._claims_cache is None or DataService._claims_cache.empty:
+        if DataService._claims_cache is None:
             DataService.load_claims_from_db()
         return DataService._claims_cache if DataService._claims_cache is not None else pd.DataFrame()
     
@@ -44,7 +44,7 @@ class DataService:
     
     @staticmethod
     def get_providers() -> pd.DataFrame:
-        if DataService._providers_cache is None or DataService._providers_cache.empty:
+        if DataService._providers_cache is None:
             DataService.load_providers_from_db()
         return DataService._providers_cache if DataService._providers_cache is not None else pd.DataFrame()
     

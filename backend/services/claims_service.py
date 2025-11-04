@@ -348,10 +348,17 @@ class ClaimsService:
             return default_stats
 
         provider_id = claim.get("provider_id")
-        provider_claims = claims_df[claims_df["provider_id"] == provider_id]
+        provider_claims = (
+            claims_df[claims_df["provider_id"] == provider_id]
+            if "provider_id" in claims_df.columns
+            else pd.DataFrame()
+        )
         total_claims = int(len(provider_claims))
-        status_series = provider_claims["status"].astype(str).str.lower()
-        approvals = int((status_series == "approved").sum()) if total_claims else 0
+        if not provider_claims.empty and "status" in provider_claims.columns:
+            status_series = provider_claims["status"].astype(str).str.lower()
+            approvals = int((status_series == "approved").sum())
+        else:
+            approvals = 0
         approval_rate = approvals / total_claims if total_claims else 0
 
         if total_claims <= 1:
@@ -367,17 +374,20 @@ class ClaimsService:
 
         same_diagnosis = 0
         same_procedure = 0
-        if diagnosis_code:
+        if diagnosis_code and "diagnosis_code" in claims_df.columns:
             same_diagnosis = int(
                 claims_df[
                     (claims_df["diagnosis_code"].astype(str) == str(diagnosis_code))
                     & (claims_df["id"] != claim_id)
                 ].shape[0]
             )
-        if procedure_code:
+        if procedure_code and (
+            "procedure_codes" in claims_df.columns or "procedure_code" in claims_df.columns
+        ):
+            procedure_column = "procedure_codes" if "procedure_codes" in claims_df.columns else "procedure_code"
             same_procedure = int(
                 claims_df[
-                    (claims_df["procedure_codes"].astype(str) == str(procedure_code))
+                    (claims_df[procedure_column].astype(str) == str(procedure_code))
                     & (claims_df["id"] != claim_id)
                 ].shape[0]
             )

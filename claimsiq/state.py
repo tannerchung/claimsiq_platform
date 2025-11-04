@@ -699,6 +699,21 @@ class ClaimsState(rx.State):
     # Data Management
     is_loading_data: bool = False
 
+    @rx.var
+    def modal_provider_summary(self) -> str:
+        value = self.modal_quick_stats.get("provider_summary") if isinstance(self.modal_quick_stats, dict) else None
+        return str(value) if value else "No provider history available."
+
+    @rx.var
+    def modal_similar_summary(self) -> str:
+        value = self.modal_quick_stats.get("similar_summary") if isinstance(self.modal_quick_stats, dict) else None
+        return str(value) if value else "No similar claims found."
+
+    @rx.var
+    def modal_processing_label(self) -> str:
+        value = self.modal_quick_stats.get("days_pending_label") if isinstance(self.modal_quick_stats, dict) else None
+        return str(value) if value else "Pending"
+
     async def load_kaggle_data(self):
         """Load real insurance data from Kaggle"""
         if not self.data_ops_enabled:

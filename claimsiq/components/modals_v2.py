@@ -26,6 +26,28 @@ def detail_row(label: str, value: rx.Component) -> rx.Component:
     )
 
 
+def quick_stat_tile(icon: str, label: str, value: str) -> rx.Component:
+    """Compact stat card for quick metrics."""
+    return rx.box(
+        rx.vstack(
+            rx.hstack(
+                rx.icon(icon, size=16, color=COLORS["primary"]),
+                rx.text(label, size="1", weight="bold", color=COLORS["gray_600"]),
+                spacing="2",
+                align="center",
+            ),
+            rx.text(
+                value,
+                size="2",
+                color=COLORS["gray_700"],
+            ),
+            spacing="2",
+            align="start",
+        ),
+        class_name="rounded-lg border border-gray-200 bg-slate-50 p-3",
+    )
+
+
 def claim_detail_modal_v2() -> rx.Component:
     """
     Enhanced claim details modal with:
@@ -242,34 +264,25 @@ def claim_detail_modal_v2() -> rx.Component:
                                     color=COLORS["gray_900"],
                                     margin_bottom="3",
                                 ),
-                                detail_row(
-                                    "Provider History",
-                                    rx.text(
+                                rx.grid(
+                                    quick_stat_tile(
+                                        "building",
+                                        "Provider History",
                                         ClaimsState.modal_quick_stats["provider_summary"],
-                                        size="2",
-                                        color=COLORS["gray_600"],
                                     ),
-                                ),
-                                detail_row(
-                                    "Similar Claims",
-                                    rx.text(
+                                    quick_stat_tile(
+                                        "files",
+                                        "Similar Claims",
                                         ClaimsState.modal_quick_stats["similar_summary"],
-                                        size="2",
-                                        color=COLORS["gray_600"],
                                     ),
-                                ),
-                                detail_row(
-                                    "Processing Time",
-                                    rx.text(
+                                    quick_stat_tile(
+                                        "timer",
+                                        "Processing Status",
                                         ClaimsState.modal_quick_stats["days_pending_label"],
-                                        size="2",
-                                        color=COLORS["gray_900"],
-                                        weight="medium",
                                     ),
+                                    class_name="grid gap-3 w-full",
+                                    columns="1",
                                 ),
-
-                                rx.divider(margin_y="3"),
-
                                 rx.box(
                                     rx.text(
                                         "Processor Notes",
@@ -318,8 +331,7 @@ def claim_detail_modal_v2() -> rx.Component:
                                     ),
                                     width="100%",
                                 ),
-
-                                spacing="0",
+                                spacing="4",
                                 align="start",
                                 width="100%",
                             ),

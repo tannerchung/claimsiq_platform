@@ -101,41 +101,31 @@ def dark_info_card(heading: str, children: list) -> rx.Component:
         width="100%",
     )
 
-
-def quick_stat_card(label: str, value: rx.Component | str, icon: str) -> rx.Component:
-    """Compact statistic pill shown at top of the modal."""
-    return rx.box(
-        rx.hstack(
-            rx.icon(icon, size=20, color=DARK_COLORS["primary"]),
-            rx.vstack(
-                rx.text(
-                    label,
-                    size="1",
-                    weight="bold",
-                    style={
-                        "color": DARK_COLORS["text_tertiary"],
-                        "text-transform": "uppercase",
-                        "letter-spacing": "0.05em",
-                    },
-                ),
-                value if isinstance(value, rx.Component) else rx.text(
-                    value,
-                    size="2",
-                    style={"color": DARK_COLORS["text_primary"]},
-                ),
-                spacing="1",
-                align="start",
+def quick_stat_row(label: str, value: str, icon: str) -> rx.Component:
+    """Row inside the quick statistics card."""
+    return rx.hstack(
+        rx.icon(icon, size=18, color=DARK_COLORS["text_secondary"]),
+        rx.vstack(
+            rx.text(
+                label,
+                size="1",
+                weight="bold",
+                style={
+                    "color": DARK_COLORS["text_tertiary"],
+                    "text-transform": "uppercase",
+                    "letter-spacing": "0.05em",
+                },
             ),
-            spacing="3",
-            align="center",
+            rx.text(
+                value,
+                size="3",
+                style={"color": DARK_COLORS["text_primary"]},
+            ),
+            spacing="1",
+            align="start",
         ),
-        style={
-            "background": DARK_COLORS["bg_elevated"],
-            "border": f"1px solid {DARK_COLORS['border']}",
-            "border-radius": "10px",
-            "padding": "16px",
-            "box-shadow": DARK_SHADOWS["sm"],
-        },
+        spacing="3",
+        align="center",
         width="100%",
     )
 
@@ -200,30 +190,6 @@ def claim_detail_modal_dark() -> rx.Component:
                     width="100%",
                     align="center",
                     style={"margin-bottom": "24px"},
-                ),
-
-                # Quick stats
-                rx.grid(
-                    quick_stat_card(
-                        "Provider history",
-                        ClaimsState.modal_quick_stats.get("provider_summary", "No provider history available."),
-                        "building-2",
-                    ),
-                    quick_stat_card(
-                        "Similar claims",
-                        ClaimsState.modal_quick_stats.get("similar_summary", "No similar claims found."),
-                        "git-branch",
-                    ),
-                    quick_stat_card(
-                        "Processing status",
-                        ClaimsState.modal_quick_stats.get("days_pending_label", "Pending"),
-                        "timer",
-                    ),
-                    columns="3",
-                    spacing="4",
-                    width="100%",
-                    style={"margin-bottom": "24px"},
-                    class_name="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 w-full",
                 ),
 
                 # Two-column layout
@@ -488,6 +454,22 @@ def claim_detail_modal_dark() -> rx.Component:
                         dark_info_card(
                             "Quick Statistics",
                             [
+                                rx.vstack(
+                                    quick_stat_row(
+                                        "Provider history",
+                                        ClaimsState.modal_provider_summary,
+                                        "building-2",
+                                    ),
+                                    quick_stat_row(
+                                        "Similar claims",
+                                        ClaimsState.modal_similar_summary,
+                                        "git-branch",
+                                    ),
+                                    spacing="3",
+                                    align="start",
+                                    width="100%",
+                                ),
+                                rx.divider(margin_y="3"),
                                 # Days pending with visual indicator
                                 rx.box(
                                     rx.hstack(
@@ -528,72 +510,6 @@ def claim_detail_modal_dark() -> rx.Component:
                                     ),
                                     style={
                                         "padding": "16px",
-                                        "background": DARK_COLORS["bg_elevated"],
-                                        "border-radius": "8px",
-                                        "border": f"1px solid {DARK_COLORS['border']}",
-                                    },
-                                    width="100%",
-                                ),
-
-                                # Provider history
-                                rx.box(
-                                    rx.vstack(
-                                        rx.hstack(
-                                            rx.icon("building", size=16, color=DARK_COLORS["text_secondary"]),
-                                            rx.text(
-                                                "Provider History",
-                                                size="1",
-                                                weight="bold",
-                                                style={"color": DARK_COLORS["text_tertiary"]},
-                                            ),
-                                            spacing="2",
-                                        ),
-                                        rx.text(
-                                            "First time filing",
-                                            size="2",
-                                            style={
-                                                "color": DARK_COLORS["text_disabled"],
-                                                "font-style": "italic",
-                                            },
-                                        ),
-                                        spacing="2",
-                                        align="start",
-                                    ),
-                                    style={
-                                        "padding": "12px",
-                                        "background": DARK_COLORS["bg_elevated"],
-                                        "border-radius": "8px",
-                                        "border": f"1px solid {DARK_COLORS['border']}",
-                                    },
-                                    width="100%",
-                                ),
-
-                                # Similar claims
-                                rx.box(
-                                    rx.vstack(
-                                        rx.hstack(
-                                            rx.icon("file-stack", size=16, color=DARK_COLORS["text_secondary"]),
-                                            rx.text(
-                                                "Similar Claims",
-                                                size="1",
-                                                weight="bold",
-                                                style={"color": DARK_COLORS["text_tertiary"]},
-                                            ),
-                                            spacing="2",
-                                        ),
-                                        rx.text(
-                                            "None from this provider",
-                                            size="2",
-                                            style={
-                                                "color": DARK_COLORS["text_disabled"],
-                                                "font-style": "italic",
-                                            },
-                                        ),
-                                        spacing="2",
-                                        align="start",
-                                    ),
-                                    style={
-                                        "padding": "12px",
                                         "background": DARK_COLORS["bg_elevated"],
                                         "border-radius": "8px",
                                         "border": f"1px solid {DARK_COLORS['border']}",

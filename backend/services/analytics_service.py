@@ -82,5 +82,16 @@ class AnalyticsService:
         
         high_risk = claims_with_risk[claims_with_risk['risk_score'] >= 0.7]
         high_risk_sorted = high_risk.sort_values('risk_score', ascending=False).head(limit)
-        
-        return high_risk_sorted.to_dict('records')
+
+        records = []
+        for _, row in high_risk_sorted.iterrows():
+            clean_row = {}
+            for key, value in row.to_dict().items():
+                if pd.isna(value):
+                    clean_row[key] = None
+                else:
+                    clean_row[key] = value
+            if clean_row.get("risk_score") is not None:
+                clean_row["risk_score"] = round(float(clean_row["risk_score"]), 2)
+            records.append(clean_row)
+        return records
