@@ -236,6 +236,18 @@ claimsiq-platform/
 
 ---
 
+## ⚠️ CRITICAL: Reflex-Specific Patterns
+
+**MUST READ BEFORE CODING:** See `REFLEX_BEST_PRACTICES.md` for critical Reflex-specific patterns that differ from standard Python. Common errors include:
+- Using Python `if/else` with Reflex Vars (use `rx.cond()` instead)
+- Not converting Vars before comparisons (use `.to(float)`)
+- Invalid icon names with hyphens (use underscores or simple names)
+- Using `.get()` on Reflex Var dicts (use bracket notation)
+
+**These issues cause compilation errors 100% of the time. Check the best practices doc first!**
+
+---
+
 ## Reflex Patterns (MVP Only)
 
 ### Simple State Management

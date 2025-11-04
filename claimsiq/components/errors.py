@@ -142,23 +142,11 @@ def enhanced_error_display() -> rx.Component:
     """
     return rx.cond(
         ClaimsState.error_message != "",
-        rx.match(
-            ClaimsState.error_message,
-            (
-                rx.contains(ClaimsState.error_message, "Failed to load"),
-                data_load_error()
-            ),
-            (
-                rx.contains(ClaimsState.error_message, "generate sample"),
-                sample_data_error()
-            ),
-            # Default error
-            error_callout_with_retry(
-                message=ClaimsState.error_message,
-                action_text="Retry",
-                on_retry=ClaimsState.load_all_data,
-                troubleshooting="If this error persists, check the browser console and API logs for more details.",
-            ),
+        error_callout_with_retry(
+            message=ClaimsState.error_message,
+            action_text="Retry",
+            on_retry=ClaimsState.load_all_data,
+            troubleshooting="Check that the FastAPI backend is running on port 8000. If the error persists, check the browser console and API logs for more details.",
         ),
         rx.fragment(),
     )

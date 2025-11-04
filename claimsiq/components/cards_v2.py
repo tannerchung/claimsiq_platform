@@ -117,6 +117,16 @@ def metric_value_large(value: str | int, color: str = COLORS["gray_900"]) -> rx.
     )
 
 
+def metric_trend(text: str) -> rx.Component:
+    """Trend indicator for metric cards (e.g., +12%, -3%)"""
+    return rx.text(
+        text,
+        size="2",
+        weight="medium",
+        color=COLORS["gray_600"],
+    )
+
+
 def metric_value_with_subtitle(
     value: str | int,
     subtitle: str,

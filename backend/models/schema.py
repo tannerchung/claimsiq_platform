@@ -11,7 +11,21 @@ class ClaimResponse(BaseModel):
     status: str
     provider_id: Optional[str] = None
     procedure_codes: Optional[str] = None
+    procedure_description: Optional[str] = None
+    diagnosis_code: Optional[str] = None
+    diagnosis_description: Optional[str] = None
+    patient_age: Optional[int] = None
+    patient_gender: Optional[str] = None
+    patient_state: Optional[str] = None
+    days_to_process: Optional[float] = None
+    denial_reason: Optional[str] = None
+    processed_date: Optional[str] = None
     risk_score: Optional[float] = 0.0
+    claim_amount_formatted: Optional[str] = None
+    approved_amount_formatted: Optional[str] = None
+
+    class Config:
+        extra = "allow"  # Allow extra fields not defined in the model
 
 class SummaryResponse(BaseModel):
     total_claims: int

@@ -100,7 +100,7 @@ def enhanced_pagination() -> rx.Component:
                         placeholder="Page",
                         min=1,
                         max=ClaimsState.total_pages,
-                        on_change=lambda value: ClaimsState.set_page(int(value) if value else 1),
+                        on_change=ClaimsState.set_page_from_input,
                         size="2",
                         width="80px",
                         aria_label="Jump to page number",

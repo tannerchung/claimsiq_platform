@@ -192,6 +192,14 @@ class ClaimsState(rx.State):
         if 1 <= page <= self.total_pages:
             self.current_page = page
 
+    def set_page_from_input(self, page: str):
+        """Set page from input field (converts string to int)"""
+        try:
+            page_num = int(page)
+            self.set_page(page_num)
+        except (ValueError, TypeError):
+            pass  # Ignore invalid input
+
     def sort_by(self, column: str):
         if self.sort_column == column:
             # Toggle direction if same column

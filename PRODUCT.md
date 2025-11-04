@@ -206,41 +206,79 @@ Visual trends help spot problems instantly. Declining approval rate = bottleneck
 
 ---
 
-### Feature 6: Advanced Filters Panel
+### Feature 6: Integrated Filters Bar (Claims Queue)
 
 **Filter Types:**
+- **Status Filters:** Quick toggle buttons (All/Approved/Pending/Flagged) with count badges
+- **Risk Levels:** Toggle buttons (Low/Medium/High) with check icons when active
 - **Date Range:** Start and end date pickers for custom time periods
-- **Amount Range:** Slider from $0 to $100,000 with step controls
-- **Risk Levels:** Multi-select checkboxes (low/medium/high)
 
 **Interaction:**
-- Popover panel triggered by "Filters" button
-- Apply button to activate filters
-- Reset button to clear all filters
-- Shows count of active filters on button badge
+- Horizontal filter bar positioned at top of Claims Queue section
+- Inline with table, no popover needed
+- Clear All button to reset all filters instantly
+- Visual feedback with check icons for active filters
+- Count badges show number of claims in each status category
 
 **User Story:**
-> As a claims analyst, I want to filter claims by multiple criteria simultaneously so that I can find specific segments of my portfolio quickly.
+> As a claims analyst, I want quick access to filter controls right in the Claims Queue so that I can rapidly switch between different views without opening additional panels.
 
 ---
 
-### Feature 7: Claim Details Modal
+### Feature 7: Enhanced Claim Details Modal (Dark Mode)
 
-**What it shows:**
-- Full claim information in organized 2-column grid
-- Claim ID, date, amount, status
-- Patient name, provider information
-- Risk score with color-coded badge
-- Additional claim details
+**Semantic Structure:**
+- **h1** heading for modal title (Claim #ID)
+- **h3** headings for section titles (Claim Information, Quick Statistics, Processor Notes, Review Actions)
+- Proper heading hierarchy for screen readers and accessibility
 
-**Actions:**
-- **Approve Button:** Green button to approve claim
-- **Deny Button:** Red outline button to deny claim
-- **Flag for Review:** Orange outline button to flag
+**Left Column - Claim Information:**
+- **Claim Amount:** Large, bold text with gradient background highlight
+- **Status Badge:** Color-coded with icons (circle-check, clock, circle-x, flag)
+- **Risk Assessment:**
+  - Large risk score display (0.0-1.0)
+  - Color-coded risk level badge (High/Medium/Low)
+  - Risk reason shown in danger-colored box when present
+- **Claim Date:** Formatted date display
+- **Provider ID:** Provider identifier (e.g., PROV-050)
+- **Patient Information:** Age, Gender, State in compact horizontal layout
+- **Procedure:** Code + description (e.g., "93000 - Electrocardiogram")
+- **Diagnosis:** Code + description (e.g., "E11.9 - Type 2 Diabetes")
+
+**Right Column - Quick Stats & Notes:**
+- **Days to Process:** Calendar icon with visual indicator
+  - Shows processing time for completed claims
+  - Shows "Pending review" for pending claims
+- **Provider History:** Muted styling for empty states
+- **Similar Claims:** Counts with clear empty state handling
+- **Processor Notes:** Labeled textarea with clear instructions ("Add your review notes below:")
+
+**Action Buttons (Review Actions Section):**
+- Grouped in dedicated visual section with border
+- **Approve:** Green solid button with circle-check icon
+- **Deny:** Red solid button with circle-x icon
+- **Flag for Review:** Orange outline button with flag icon
+- Hover effects (translateY lift)
+- All have aria-labels for accessibility
 - Action feedback via toast notifications
 
+**Design & Accessibility:**
+- High contrast dark theme (WCAG AA compliant)
+- Off-white text for readability
+- Layered backgrounds for visual depth
+- Empty states styled with muted colors and italic text
+- Keyboard accessible (focus trapped in modal)
+- Close with X button or click outside
+
+**Field Mappings (Database Schema):**
+- Uses `provider_id` (provider names not in database)
+- Uses `procedure_codes` (plural) and `procedure_description`
+- Uses `diagnosis_code` and `diagnosis_description`
+- Uses `patient_age`, `patient_gender`, `patient_state`
+- Uses `days_to_process` for processed claims
+
 **User Story:**
-> As a claims processor, I want to see all claim details in one place without navigating away so that I can make faster approval decisions.
+> As a claims processor, I want to see all claim details in an organized, accessible modal with clear visual hierarchy so that I can quickly understand the claim context and make confident approval decisions.
 
 ---
 

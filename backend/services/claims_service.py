@@ -71,6 +71,18 @@ class ClaimsService:
             for key, value in claim_dict.items():
                 if pd.isna(value):
                     claim_dict[key] = None
+
+            # Add formatted currency strings for frontend display
+            if claim_dict.get('claim_amount') is not None:
+                claim_dict['claim_amount_formatted'] = f"${claim_dict['claim_amount']:,.2f}"
+            else:
+                claim_dict['claim_amount_formatted'] = "$0.00"
+
+            if claim_dict.get('approved_amount') is not None:
+                claim_dict['approved_amount_formatted'] = f"${claim_dict['approved_amount']:,.2f}"
+            else:
+                claim_dict['approved_amount_formatted'] = "—"
+
             claims_list.append(claim_dict)
         
         return {

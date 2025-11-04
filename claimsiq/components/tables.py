@@ -267,7 +267,7 @@ def claims_table() -> rx.Component:
                                         ),
                                         rx.table.cell(
                                             rx.text(
-                                                f"${claim['claim_amount']:,.2f}",
+                                                claim.get("claim_amount_formatted", "$0.00"),
                                                 weight="medium",
                                                 color=COLORS["gray_900"],
                                             )

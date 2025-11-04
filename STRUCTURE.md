@@ -48,9 +48,9 @@ claimsiq-platform/
 │       ├── cards.py                 # Enhanced metric cards (icons, trends, hover effects)
 │       ├── charts.py                # Plotly visualizations (area, donut, bar charts)
 │       ├── data_management.py       # Data loading UI (Kaggle, sample, clear)
-│       ├── tables.py                # Advanced table (search, sort, pagination, badges)
-│       ├── filters.py               # Advanced filters panel (date, amount, risk)
-│       ├── modals.py                # Claim details modal with actions
+│       ├── tables_dark.py           # Advanced table for dark mode (search, sort, pagination, badges)
+│       ├── filters_dark.py          # Integrated filters bar in Claims Queue (status, risk, date)
+│       ├── modals_dark.py           # Enhanced claim details modal with semantic HTML (dark mode)
 │       ├── notifications.py         # Toast notification system
 │       ├── navbar.py                # Navigation bar (dark mode, search, user menu)
 │       └── ui_helpers.py            # Reusable utilities (empty states, skeletons, headers)
@@ -94,9 +94,9 @@ claimsiq-platform/
 | `components/cards.py` | Enhanced metric cards with icons, trends, hover effects | 80-100 |
 | `components/charts.py` | Plotly visualizations (area, donut, bar charts) | 180-220 |
 | `components/data_management.py` | Data loading panel (Kaggle, sample, clear buttons) | 80-100 |
-| `components/tables.py` | Advanced table (search, sort, pagination, badges, export) | 240-260 |
-| `components/filters.py` | Advanced filters panel (date, amount, risk) | 120-150 |
-| `components/modals.py` | Claim details modal with action buttons | 100-130 |
+| `components/tables_dark.py` | Advanced table for dark mode (search, sort, pagination, badges, export) | 240-260 |
+| `components/filters_dark.py` | Integrated filters bar in Claims Queue (status, risk, date) | 260-280 |
+| `components/modals_dark.py` | Enhanced claim details modal with semantic HTML (dark mode) | 600-640 |
 | `components/notifications.py` | Toast notification system (4 types) | 60-80 |
 | `components/navbar.py` | Navigation bar with dark mode, search, user menu | 120-150 |
 | `components/ui_helpers.py` | Reusable utilities (empty states, skeletons, sortable headers) | 80-110 |
@@ -211,25 +211,33 @@ claimsiq-platform/
 - Loading spinner state
 - ~247 lines
 
-**`components/filters.py`** - Advanced Filters Panel
-- Date range picker (start/end dates)
-- Amount range slider ($0 - $100,000)
-- Risk level checkboxes (low/medium/high)
-- Apply/Reset action buttons
-- Popover-based panel
+**`components/filters_dark.py`** - Integrated Filters Bar (Claims Queue)
+- Horizontal layout positioned at top of Claims Queue section
+- Status filter toggle buttons (All/Approved/Pending/Flagged) with count badges
+- Risk level toggle buttons (Low/Medium/High) with check icons
+- Date range pickers (start/end dates) inline
+- Clear All filters button
+- Dark theme styling with DARK_COLORS
+- No popover needed - directly integrated
 - Connected to ClaimsState filter methods
-- ~140 lines
+- ~270 lines
 
-**`components/modals.py`** - Claim Details Modal
+**`components/modals_dark.py`** - Enhanced Claim Details Modal (Dark Mode)
+- Semantic HTML structure (h1, h2, h3 headings)
 - Dialog-based modal overlay
-- Full claim information display
+- **Helper functions:**
+  - `dark_detail_field()` - Consistent field formatting with empty state handling
+  - `dark_info_card()` - Grouped sections with visual cards
 - 2-column grid layout
-- Color-coded status badge
-- Risk score badge with icon
-- Action buttons (Approve/Deny/Flag for Review)
+- **Left column:** Claim amount (gradient highlight), status badge (icons), risk assessment, claim date, provider ID, patient demographics, procedure + description, diagnosis + description
+- **Right column:** Days to process (calendar icon), provider history, similar claims, processor notes textarea
+- Action buttons grouped in "Review Actions" section with hover effects
+- High contrast dark theme (WCAG AA compliant)
+- Proper field mappings (provider_id, procedure_codes, diagnosis_code, patient_age/gender/state, days_to_process)
+- Accessibility features (aria-labels, keyboard focus)
 - Close button and backdrop dismiss
 - Connected to ClaimsState.selected_claim
-- ~120 lines
+- ~620 lines
 
 **`components/notifications.py`** - Toast Notification System
 - 4 notification types (success, error, warning, info)

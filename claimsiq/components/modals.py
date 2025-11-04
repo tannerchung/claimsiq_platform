@@ -70,7 +70,7 @@ def claim_detail_modal() -> rx.Component:
                         detail_row(
                             "Amount",
                             rx.text(
-                                f"${ClaimsState.selected_claim['claim_amount']:,.2f}",
+                                ClaimsState.selected_claim.get("claim_amount_formatted", "$0.00"),
                                 weight="bold",
                                 color=COLORS["success"],
                                 size="4",

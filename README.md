@@ -216,18 +216,31 @@ See [STRUCTURE.md](STRUCTURE.md) for complete file organization.
 - Cursor changes to pointer
 - Click any row to open details modal
 
-### 4. Claim Details Modal
+### 4. Claim Details Modal (Enhanced Dark Mode)
 **Opens when clicking table row:**
-- Full claim information display
-- 2-column grid layout
-- Color-coded status badge
-- Risk score badge with icon
-- Additional information section
-- Action buttons:
-  - ✓ Approve (green)
-  - ✗ Deny (red outline)
+- Semantic HTML structure (h1, h2, h3 headings for accessibility)
+- 2-column grid layout with visual cards
+- **Left Column - Claim Information:**
+  - Claim amount with gradient highlight
+  - Color-coded status badges with icons (circle-check, clock, circle-x, flag)
+  - Risk assessment with large score and color-coded level badges
+  - Risk reason displayed when present
+  - Claim date, Provider ID
+  - Patient demographics (Age, Gender, State)
+  - Procedure code with description
+  - Diagnosis code with description
+- **Right Column - Quick Stats & Notes:**
+  - Days to process/pending with calendar icon
+  - Provider history and similar claims
+  - Processor notes textarea with clear label
+- **Action Buttons:**
+  - Grouped in dedicated "Review Actions" section
+  - ✓ Approve (green solid)
+  - ✗ Deny (red solid)
   - ⚠ Flag for Review (orange outline)
-- Close with X or click outside
+  - Hover effects and aria-labels for accessibility
+- High contrast dark theme (WCAG AA compliant)
+- Close with X button or click outside
 
 ### 5. Export Functionality
 **CSV Download:**
@@ -542,20 +555,29 @@ MIT License - See LICENSE file for details
 - Clean, professional design
 
 ### Claims Table
-- Advanced search and filters
+- Integrated filters within Claims Queue section
+- Status and risk filter toggles with count badges
+- Date range picker inline
 - Sortable columns with visual indicators
 - Pagination controls
 - Export to CSV button
 
-### Claim Details Modal
-- Full claim information
-- Color-coded status and risk badges
-- Action buttons (Approve/Deny/Flag)
+### Claim Details Modal (Enhanced)
+- Semantic HTML with proper heading structure
+- Organized visual cards for claim information
+- Patient demographics (Age, Gender, State)
+- Procedure and diagnosis codes with descriptions
+- Color-coded status and risk badges with icons
+- Risk assessment with detailed reason display
+- Action buttons with hover effects (Approve/Deny/Flag)
+- High contrast dark theme (WCAG AA compliant)
 
-### Advanced Filters
-- Date range picker
-- Amount range slider
-- Risk level checkboxes
+### Integrated Filters Bar
+- Horizontal filter bar at top of Claims Queue
+- Status filter buttons (All/Approved/Pending/Flagged)
+- Risk level toggles (Low/Medium/High)
+- Date range selection
+- Clear All button
 
 ---
 

@@ -44,7 +44,7 @@ def filter_section(
                 rx.cond(
                     tooltip != "",
                     rx.tooltip(
-                        rx.icon("help-circle", size=14, color=COLORS["gray_500"]),
+                        rx.icon("circle_help", size=14, color=COLORS["gray_500"]),
                         content=tooltip,
                     ),
                     rx.fragment(),
@@ -390,7 +390,7 @@ def enhanced_filters_panel() -> rx.Component:
                 rx.spacer(),
                 rx.button(
                     rx.hstack(
-                        rx.icon("x-circle", size=18),
+                        rx.icon("x", size=18),
                         rx.text("Clear All Filters", size="2", weight="bold"),
                         spacing="2",
                     ),
